@@ -25,8 +25,6 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		TCPServer server  = new TCPServer();
-		server.start();
 		launch(args);
 	}
 
