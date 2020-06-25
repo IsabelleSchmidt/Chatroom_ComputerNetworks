@@ -2,14 +2,13 @@ package client_server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import javax.swing.JOptionPane;
 
 public class Client {
 	
@@ -19,34 +18,33 @@ public class Client {
     
 
     public void startClient() throws UnknownHostException, IOException{
-        //Create socket connection
-        socket = new Socket("localhost", 1234);
-
-        //create printwriter for sending login to server
-        output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-        //prompt for user name
-        String username = JOptionPane.showInputDialog(null, "Enter User Name:");
-
-        //send user name to server
-        output.write(username);
-
-        //prompt for password
-        String password = JOptionPane.showInputDialog(null, "Enter Password");
-
-        //send password to server
-        output.write(password);
-        output.flush();
-
-        //create Buffered reader for reading response from server
-        read = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-        //read response from server
-        String response = read.readLine();
-        System.out.println("This is the response: " + response);
-
-        //display response
-        JOptionPane.showMessageDialog(null, response);
+    	
+    	try{
+		    Socket socket=new Socket("127.0.0.1",8888);
+		    DataInputStream inStream=new DataInputStream(socket.getInputStream());
+		    DataOutputStream outStream=new DataOutputStream(socket.getOutputStream());
+		    BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+		    String clientMessage="",serverMessage="";
+		    
+		    
+		    while(!clientMessage.equals("bye")){
+		    	if(clientMessage == "") {
+		    		System.out.println("Möchtest du dich (e)inloggen oder (r)egistrieren?");
+		    	}
+		    
+		      clientMessage=br.readLine();
+		      outStream.writeUTF(clientMessage);
+		      outStream.flush();
+		      serverMessage=inStream.readUTF();
+		      System.out.println(serverMessage);
+		    }
+		    outStream.close();
+		    outStream.close();
+		    socket.close();
+		    
+		  }catch(Exception e){
+		    System.out.println("Exception" + e);
+		  }
     }
     
     public static void main(String args[]){
@@ -54,10 +52,8 @@ public class Client {
         try {
             client.startClient();
         } catch (UnknownHostException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

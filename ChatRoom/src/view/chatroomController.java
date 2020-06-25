@@ -1,5 +1,6 @@
 package view;
 
+import client_server.TCPServer;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
@@ -53,6 +54,9 @@ public class chatroomController {
 
     @FXML
     void SetOnActionLoginButton(ActionEvent event) {
+    	TCPServer server = new TCPServer();
+    	server.start();
+    	
     	scrollUp();
     }
 
