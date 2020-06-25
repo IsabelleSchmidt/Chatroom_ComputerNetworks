@@ -15,15 +15,11 @@ import java.util.Map;
 
 public class TCPServer {
 
-	private Map<String, String> benutzer;			//Map für alle registrierten User mit Passwort
-	private List<String> activeUser;				//Liste für alle eingeloggten User
-
 	boolean korrekt = false;
 	boolean vergeben = true;
 
 	public TCPServer() {
-		this.benutzer = new HashMap<>();
-		this.activeUser = new ArrayList<>();
+		
 	}
 
 	public void start() {

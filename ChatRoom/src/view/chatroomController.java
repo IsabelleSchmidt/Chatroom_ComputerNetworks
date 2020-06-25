@@ -48,15 +48,15 @@ public class chatroomController {
 
     @FXML
     private Button loginButton;
+    
+    @FXML
+    private Button loggout;
 
     @FXML
     private Label informationLabel;
 
     @FXML
-    void SetOnActionLoginButton(ActionEvent event) {
-    	TCPServer server = new TCPServer();
-    	server.start();
-    	
+    void SetOnActionLoginButton(ActionEvent event) {    	
     	scrollUp();
     }
 
@@ -68,6 +68,11 @@ public class chatroomController {
     @FXML
     void SetOnActionSendButton(ActionEvent event) {
 
+    }
+    
+    @FXML
+    void SetOnActionLogoutButton(ActionEvent event) {
+    	System.exit(1);
     }
     
     void scrollUp() {
