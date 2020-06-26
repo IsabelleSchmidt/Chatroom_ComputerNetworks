@@ -14,7 +14,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 public class Main extends Application {
-	TCPServer server = new TCPServer();
 
 
 	@Override
@@ -31,19 +30,6 @@ public class Main extends Application {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-
-		Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					server.start();
-				} catch (Exception e) {
-				}
-			}
-
-		});
-		thread.start();
 
 		primaryStage.setOnCloseRequest(windowEvent -> {
 			Platform.exit();

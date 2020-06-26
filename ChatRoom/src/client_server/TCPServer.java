@@ -12,15 +12,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 
 public class TCPServer {
-	private List<Socket> users = new ArrayList<>();
+
 	ServerClientThreadTCP sct = new ServerClientThreadTCP();
 	ServerSocket server;
 
 	int clientNo;
 	private Map<String, String> benutzer = new HashMap<>();
-	private List<String> activeUser = new ArrayList<>();
+	public ObservableList<String> activeUser = FXCollections.observableArrayList();
 
 	private Map<Integer, Boolean> einloggen = new HashMap<>();
 	private Map<Integer, Boolean> registrieren = new HashMap<>();
@@ -38,6 +41,8 @@ public class TCPServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		
 	}
 
 	public List<String> getActiveUsers() {
@@ -53,7 +58,6 @@ public class TCPServer {
 
 				clientNo++;
 				System.out.println(" >> " + "Client No:" + clientNo + " started!");
-				System.out.println(users);
 
 				final Thread thread = new Thread(new Runnable() {
 
@@ -108,11 +112,12 @@ public class TCPServer {
 				
 				if (testUsername(s[1]) == false) {
 					registerUser(s[1], s[1]);
-
+					activeUser.add(s[1]);
+					System.out.println(activeUser);
 					benutzer.put(s[1], s[1]);
+					
 
 					serverMessage = "true";
-					registrieren.put(clientNo, false);
 				} else if (testUsername(s[1]) == false) {
 					serverMessage = "false";
 				}
@@ -125,6 +130,7 @@ public class TCPServer {
 					
 					serverMessage = "false";
 				} else {
+					activeUser.add(s[1]);
 					serverMessage = "true";
 					einloggen.put(clientNo, false);
 				}
@@ -229,10 +235,10 @@ public class TCPServer {
 			}
 	    }
 	}
+	
+	public ObservableList<String> getActiveUser() {
+		return activeUser;
+	}
 
-//	public static void main(String[] args) throws Exception {
-//		TCPServer s = new TCPServer();
-//		s.start();
-//	}
 
 }

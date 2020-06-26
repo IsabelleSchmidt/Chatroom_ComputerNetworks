@@ -68,6 +68,7 @@
                      </font>
                   </Button>
                   <Label id="rückmeldung" fx:id="informationLabel" layoutX="304.0" layoutY="332.0" text="Hello friend." />
+                  <Button fx:id="startServer" layoutX="25.0" layoutY="22.0" mnemonicParsing="false" onAction="#SetStartServerOnAction" style="-fx-background-color: #C1CDC1 #C1CDC1;" text="starte Server" />
                </children>
             </Pane>
          </children>

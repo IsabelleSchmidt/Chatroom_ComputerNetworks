@@ -3,8 +3,12 @@ package view;
 import java.io.IOException;
 
 import client_server.Client;
+import client_server.TCPServer;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -17,54 +21,62 @@ import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
 
 public class chatroomController {
-	
-	
-    @FXML
-    private AnchorPane chatPane;
 
-    @FXML
-    private ListView<?> activeUserListView;
+	@FXML
+	private AnchorPane chatPane;
 
-    @FXML
-    private ListView<?> chatRoomListView;
+	@FXML
+	private ListView<String> activeUserListView;
 
-    @FXML
-    private TextArea typeMessageField;
+	@FXML
+	private ListView<String> chatRoomListView;
 
-    @FXML
-    private Button sendButton;
+	@FXML
+	private TextArea typeMessageField;
 
-    @FXML
-    private Label chattingWithLabel;
+	@FXML
+	private Button sendButton;
 
-    @FXML
-    private AnchorPane startPane;
+	@FXML
+	private Label chattingWithLabel;
 
-    @FXML
-    private PasswordField password;
+	@FXML
+	private AnchorPane startPane;
 
-    @FXML
-    private TextField username;
+	@FXML
+	private PasswordField password;
 
-    @FXML
-    private Button registerButton;
+	@FXML
+	private TextField username;
 
-    @FXML
-    private Button loginButton;
-    
-    @FXML
-    private Button loggout;
+	@FXML
+	private Button registerButton;
 
-    @FXML
-    private Label informationLabel;
+	@FXML
+	private Button loginButton;
+
+	@FXML
+	private Button loggout;
+
+	@FXML
+	private Button startServer;
+
+	public Button getStartServer() {
+		return startServer;
+	}
+
+	@FXML
+	private Label informationLabel;
 
 	private Client client;
-  
-    @FXML
-    void SetOnActionLoginButton(ActionEvent event) {   
-    	System.out.println(username.getText() + password.getText());
-    	
-    	String name = username.getText();
+	private TCPServer server;
+	boolean isStarted = false;
+
+	@FXML
+	void SetOnActionLoginButton(ActionEvent event) {
+		System.out.println(username.getText() + password.getText());
+
+		String name = username.getText();
 		String passwort = password.getText();
 		this.client = new Client();
 
@@ -75,64 +87,88 @@ public class chatroomController {
 			e.printStackTrace();
 		}
 		try {
-			if(client.login(name,passwort)) {
+			if (client.login(name, passwort)) {
 				scrollUp();
-			}else {
+			} else {
 				System.out.println("else login");
 				informationLabel.setText("Da ist etwas schief gelaufen");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-    	
-    }
 
+	}
 
 	@FXML
-    void SetOnActionRegisterButton(ActionEvent event) {
+	void SetOnActionRegisterButton(ActionEvent event) {
 		String name = username.getText();
 		String passwort = password.getText();
-    	System.out.println(username.getText() + password.getText());
-    	
-    	this.client = new Client();
+		System.out.println(username.getText() + password.getText());
+
+		this.client = new Client();
 		try {
 			client.startClient();
 			System.out.println("Client wurde gestartet");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		try {
-			if(client.registrier(name,passwort)) {
+			if (client.registrier(name, passwort)) {
 				scrollUp();
-			}else {
+
+				server.activeUser.addListener(new ListChangeListener<String>() {
+					@Override
+					public void onChanged(Change<? extends String> arg0) {
+						System.out.println("USERSSSSS: ");
+						Platform.runLater(() -> {
+							
+							activeUserListView.getItems().setAll(arg0.getList());
+						});
+					}
+
+				});
+			} else {
 				informationLabel.setText("Der Benutzername ist leider schon vergeben");
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
-    }
 
-    @FXML
-    void SetOnActionSendButton(ActionEvent event) {
-    	
-    	
-    	
-    	
-    }
-    
-    @FXML
-    void SetOnActionLogoutButton(ActionEvent event) {
-    	String name = username.getText();
-    	
-    	client.logout(name);
-    	scrollDown();
-    }
-    
-    void scrollUp() {
+	}
+
+	@FXML
+	void SetOnActionSendButton(ActionEvent event) {
+
+	}
+
+	@FXML
+	void SetStartServerOnAction(ActionEvent event) {
+
+		server = new TCPServer();
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					server.start();
+				} catch (Exception e) {
+				}
+			}
+
+		});
+		thread.start();
+
+	}
+
+	@FXML
+	void SetOnActionLogoutButton(ActionEvent event) {
+		String name = username.getText();
+
+		// client.logout(name);
+		scrollDown();
+	}
+
+	void scrollUp() {
 		TranslateTransition tr1 = new TranslateTransition();
 		tr1.setDuration(Duration.millis(600));
 		tr1.setToX(0);
@@ -148,9 +184,9 @@ public class chatroomController {
 		ParallelTransition pt = new ParallelTransition(tr1, tr2);
 		pt.play();
 	}
-    
-    void scrollDown(){
-    	TranslateTransition tr1 = new TranslateTransition();
+
+	void scrollDown() {
+		TranslateTransition tr1 = new TranslateTransition();
 		tr1.setDuration(Duration.millis(600));
 		tr1.setToX(0);
 		tr1.setToY(1000);
@@ -164,7 +200,7 @@ public class chatroomController {
 		tr2.setNode(startPane);
 		ParallelTransition pt = new ParallelTransition(tr1, tr2);
 		pt.play();
-    	
-    }
+
+	}
 
 }
