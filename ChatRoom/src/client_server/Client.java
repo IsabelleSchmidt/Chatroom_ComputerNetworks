@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+
 public class Client {
 
 	Socket socket;
@@ -18,7 +19,7 @@ public class Client {
 	DataOutputStream outStream;
 	String clientMessage = "", serverMessage = "";
 	BufferedReader br;
-
+	
 	public void startClient() throws UnknownHostException, IOException {
 		System.out.println("startClient Methode wurde aufgerufen");
 		try {
@@ -47,7 +48,6 @@ public class Client {
 				return false;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
@@ -68,10 +68,31 @@ public class Client {
 				return false;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	public boolean logout(String name) {
+		clientMessage = "lo" + " " + name;
+		
+		try {
+			outStream.writeUTF(clientMessage);
+			outStream.flush();
+			serverMessage = inStream.readUTF();
+			System.out.println("antwort: " + serverMessage);
+			
+			if (serverMessage.equals("ausgeloggt")) {
+				System.out.println(serverMessage);
+				return true;
+			}else {
+				return false;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+		
 	}
 
 	public void close() {
@@ -87,15 +108,6 @@ public class Client {
 
 	}
 
-	public static void main(String args[]) {
-		Client client = new Client();
-		try {
-			client.startClient();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	
 
 }

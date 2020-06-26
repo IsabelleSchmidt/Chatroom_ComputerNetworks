@@ -59,50 +59,34 @@ public class chatroomController {
     private Label informationLabel;
 
 	private Client client;
-
-//    public chatroomController() {
-//		this.client = new Client();
-//		try {
-//			client.startClient();
-//			System.out.println("Client wurde gestartet");
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
-//    
+  
     @FXML
     void SetOnActionLoginButton(ActionEvent event) {   
     	System.out.println(username.getText() + password.getText());
-    	login();
     	
-    }
-
-    private void login() {
-		String name = username.getText();
+    	String name = username.getText();
 		String passwort = password.getText();
 		this.client = new Client();
+
 		try {
 			client.startClient();
 			System.out.println("Client wurde gestartet");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
 			if(client.login(name,passwort)) {
 				scrollUp();
 			}else {
-				//error Message anzeigen
 				System.out.println("else login");
 				informationLabel.setText("Da ist etwas schief gelaufen");
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-	}
+    	
+    }
+
 
 	@FXML
     void SetOnActionRegisterButton(ActionEvent event) {
@@ -134,12 +118,18 @@ public class chatroomController {
 
     @FXML
     void SetOnActionSendButton(ActionEvent event) {
-
+    	
+    	
+    	
+    	
     }
     
     @FXML
     void SetOnActionLogoutButton(ActionEvent event) {
-    	System.exit(1);
+    	String name = username.getText();
+    	
+    	client.logout(name);
+    	scrollDown();
     }
     
     void scrollUp() {
@@ -158,5 +148,23 @@ public class chatroomController {
 		ParallelTransition pt = new ParallelTransition(tr1, tr2);
 		pt.play();
 	}
+    
+    void scrollDown(){
+    	TranslateTransition tr1 = new TranslateTransition();
+		tr1.setDuration(Duration.millis(600));
+		tr1.setToX(0);
+		tr1.setToY(1000);
+		tr1.setNode(chatPane);
+		TranslateTransition tr2 = new TranslateTransition();
+		tr2.setDuration(Duration.millis(600));
+		tr2.setFromX(0);
+		tr2.setFromY(-1000);
+		tr2.setToX(0);
+		tr2.setToY(0);
+		tr2.setNode(startPane);
+		ParallelTransition pt = new ParallelTransition(tr1, tr2);
+		pt.play();
+    	
+    }
 
 }
