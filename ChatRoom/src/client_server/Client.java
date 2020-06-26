@@ -9,54 +9,93 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-
 public class Client {
-	
+
 	Socket socket;
-    BufferedReader read;
-    BufferedWriter output;
-    
+	BufferedReader read;
+	BufferedWriter output;
+	DataInputStream inStream;
+	DataOutputStream outStream;
+	String clientMessage = "", serverMessage = "";
+	BufferedReader br;
 
-    public void startClient() throws UnknownHostException, IOException{
-    	
-    	try{
-		    Socket socket = new Socket("127.0.0.1",8888);
-		    DataInputStream inStream = new DataInputStream(socket.getInputStream());
-		    DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
-		    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		    String clientMessage="",serverMessage="";
-		    
-		    
-		    while(!clientMessage.equals("bye")){
-		    	if(clientMessage == "") {
-		    		System.out.println("Möchtest du dich (e)inloggen oder (r)egistrieren?");
-		    	}
-		    
-		      clientMessage=br.readLine();
-		      outStream.writeUTF(clientMessage);
-		      outStream.flush();
-		      serverMessage = inStream.readUTF();
-		      System.out.println(serverMessage);
-		    }
-		    outStream.close();
-		    outStream.close();
-		    socket.close();
-		    
-		  }catch(Exception e){
-		    System.out.println("Exception" + e);
-		  }
-    }
-    
-    public static void main(String args[]){
-        Client client = new Client();
-        try {
-            client.startClient();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+	public void startClient() throws UnknownHostException, IOException {
+		System.out.println("startClient Methode wurde aufgerufen");
+		try {
+			Socket socket = new Socket("127.0.0.1", 8888);
+			inStream = new DataInputStream(socket.getInputStream());
+			outStream = new DataOutputStream(socket.getOutputStream());
+			br = new BufferedReader(new InputStreamReader(inStream));
 
+		} catch (Exception e) {
+			System.out.println("Exception" + e);
+		}
+	}
+
+	public boolean registrier(String name, String passwort)  throws IOException{
+		clientMessage = "r" + " " + name + " " + passwort;
+
+		try {
+			outStream.writeUTF(clientMessage);
+			outStream.flush();
+			serverMessage = inStream.readUTF();
+			System.out.println("antwort: " + serverMessage);
+
+			if (serverMessage.equals("true")) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public boolean login(String name, String passwort) throws IOException {
+
+		clientMessage = "e" + " " + name + " " + passwort;
+		try {
+			outStream.writeUTF(clientMessage);
+			outStream.flush();
+			serverMessage = inStream.readUTF();
+			System.out.println("antwort: " + serverMessage);
+
+			if (serverMessage.equals("true")) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public void close() {
+
+		try {
+			outStream.close();
+			outStream.close();
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public static void main(String args[]) {
+		Client client = new Client();
+		try {
+			client.startClient();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 }

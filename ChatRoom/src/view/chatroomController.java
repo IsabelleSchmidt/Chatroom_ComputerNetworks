@@ -1,6 +1,8 @@
 package view;
 
-import client_server.TCPServer;
+import java.io.IOException;
+
+import client_server.Client;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
@@ -15,7 +17,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
 
 public class chatroomController {
-
+	
+	
     @FXML
     private AnchorPane chatPane;
 
@@ -55,14 +58,78 @@ public class chatroomController {
     @FXML
     private Label informationLabel;
 
+	private Client client;
+
+//    public chatroomController() {
+//		this.client = new Client();
+//		try {
+//			client.startClient();
+//			System.out.println("Client wurde gestartet");
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+//    
     @FXML
-    void SetOnActionLoginButton(ActionEvent event) {    	
-    	scrollUp();
+    void SetOnActionLoginButton(ActionEvent event) {   
+    	System.out.println(username.getText() + password.getText());
+    	login();
+    	
     }
 
-    @FXML
-    void SetOnActionRegisterButton(ActionEvent event) {
+    private void login() {
+		String name = username.getText();
+		String passwort = password.getText();
+		this.client = new Client();
+		try {
+			client.startClient();
+			System.out.println("Client wurde gestartet");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			if(client.login(name,passwort)) {
+				scrollUp();
+			}else {
+				//error Message anzeigen
+				System.out.println("else login");
+				informationLabel.setText("Da ist etwas schief gelaufen");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 
+	@FXML
+    void SetOnActionRegisterButton(ActionEvent event) {
+		String name = username.getText();
+		String passwort = password.getText();
+    	System.out.println(username.getText() + password.getText());
+    	
+    	this.client = new Client();
+		try {
+			client.startClient();
+			System.out.println("Client wurde gestartet");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			if(client.registrier(name,passwort)) {
+				scrollUp();
+			}else {
+				informationLabel.setText("Der Benutzername ist leider schon vergeben");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     }
 
     @FXML
