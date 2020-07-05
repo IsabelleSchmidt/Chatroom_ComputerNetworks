@@ -1,10 +1,6 @@
 package application;
 
 import java.io.IOException;
-import java.net.BindException;
-
-import client_server.Client;
-import client_server.TCPServer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
