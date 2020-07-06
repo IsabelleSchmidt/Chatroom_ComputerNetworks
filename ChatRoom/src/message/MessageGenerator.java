@@ -39,9 +39,11 @@ public class MessageGenerator {
 		return new Message(Command.SEND_REQUEST, responseMap);
 	}
 	
-	public static Message newRequest(String requestSender) {
+	public static Message newRequest(String requestSender, String senderAddress, String senderPort) {
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("requestSender", requestSender);
+		responseMap.put("senderAddress", senderAddress);
+		responseMap.put("senderPort", senderPort);
 		
 		return new Message(Command.NEW_REQUEST, responseMap);
 	}
@@ -53,9 +55,11 @@ public class MessageGenerator {
 		return new Message(Command.DECLINE_REQUEST, responseMap);
 	}
 	
-	public static Message acceptRequest(String requestSender) {
+	public static Message acceptRequest(String requestSender, InetAddress recipientAddress, int recipientPort) {
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("requestSender", requestSender);
+		responseMap.put("recipientAddress", recipientAddress.getHostAddress());
+		responseMap.put("recipientPort", Integer.toString(recipientPort));
 		
 		return new Message(Command.ACCEPT_REQUEST, responseMap);
 	}
@@ -67,40 +71,40 @@ public class MessageGenerator {
 		return new Message(Command.REQUEST_DECLINED, responseMap);
 	}
 	
-	
-	public static Message requestAccepted(String requestRecipient) {
+	public static Message requestAccepted(String requestRecipient, String recipientAddress, String recipientPort) {
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("requestRecipient", requestRecipient);
+		responseMap.put("recipientAddress", recipientAddress);
+		responseMap.put("recipientPort", recipientPort);
 		
 		return new Message(Command.REQUEST_ACCEPTED, responseMap);
 	}
 	
 	// Chat
-	public static Message sendTextMessage(String text, String messageRecipient, String time) {
+	public static Message sendTextMessage(String text, String time) {
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("text", text);
-		responseMap.put("messageRecipient", messageRecipient);
 		responseMap.put("time", time);
 		
 		return new Message(Command.SEND_TEXT_MESSAGE, responseMap);
 	}
 	
-	public static Message newTextMessage(String text, String messageSender, int messageNr) {
-		Map<String, String> responseMap = new HashMap<>();
-		responseMap.put("text", text);
-		responseMap.put("messageSender", messageSender);
-		responseMap.put("messageNr", Integer.toString(messageNr));
-		
-		return new Message(Command.NEW_TEXT_MESSAGE, responseMap);
-	}
-	
-	public static Message chunkSaved(int chunkNr) {
-		Map<String, String> responseMap = new HashMap<>();
-//		responseMap.put("messageRecipient", messageRecipient);
-		responseMap.put("chunkNr", Integer.toString(chunkNr));
-		
-		return new Message(Command.CHUNK_SAVED, responseMap);
-	}
+//	public static Message newTextMessage(String text, String messageSender, int messageNr) {
+//		Map<String, String> responseMap = new HashMap<>();
+//		responseMap.put("text", text);
+//		responseMap.put("messageSender", messageSender);
+//		responseMap.put("messageNr", Integer.toString(messageNr));
+//		
+//		return new Message(Command.NEW_TEXT_MESSAGE, responseMap);
+//	}
+//	
+//	public static Message chunkSaved(int chunkNr) {
+//		Map<String, String> responseMap = new HashMap<>();
+////		responseMap.put("messageRecipient", messageRecipient);
+//		responseMap.put("chunkNr", Integer.toString(chunkNr));
+//		
+//		return new Message(Command.CHUNK_SAVED, responseMap);
+//	}
 	
 	public static Message chunkReceived(String messageSender, int chunkNr) {
 		Map<String, String> responseMap = new HashMap<>();

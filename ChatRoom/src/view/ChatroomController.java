@@ -81,7 +81,7 @@ public class ChatroomController {
 	
 	public ChatroomController() {
 		clientPortNummer = new ArrayList<>();
-		int startValue = 1200;
+		int startValue = 1201;
 		for (int i = 0; i < MAX_CLIENT; i++) {
 			clientPortNummer.add(startValue + i);
 		}
@@ -107,7 +107,7 @@ public class ChatroomController {
 			this.client = new Client(name, clientPort);
 	
 			try {
-				client.startClient();
+				client.startTCP();
 				System.out.println("Client wurde gestartet");
 			} catch (IOException e) {
 				informationLabel.setText("Bitte erstmal den Server starten");
@@ -142,7 +142,7 @@ public class ChatroomController {
 			
 			this.client = new Client(name, clientPort);
 			try {
-				client.startClient();
+				client.startTCP();
 				System.out.println("Client wurde gestartet");
 			} catch (IOException e) {
 				informationLabel.setText("Bitte erstmal den Server starten");
@@ -223,9 +223,9 @@ public class ChatroomController {
 				sendButton.setDisable(false);
 				anfrageButton.setDisable(false);
 				
-				if (client.getChatMap().size() != 0) {
+				if (client.getChatData(newValue) != null) {
 					ObservableList<String> messages = FXCollections.observableArrayList();
-					client.getChatMap().get(newValue).getChatHistory().stream().forEach(e -> messages.add(e.toString()));
+					client.getChatData(newValue).getChatHistory().stream().forEach(e -> messages.add(e.toString()));
 					
 					chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
 					chatRoomListView.setItems(messages);

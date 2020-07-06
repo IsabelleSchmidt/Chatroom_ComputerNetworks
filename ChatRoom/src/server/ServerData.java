@@ -9,18 +9,27 @@ import javafx.collections.ObservableList;
 public class ServerData {
 	
 	private Map<String, String> userPasswords;
-	private Map<String, EndpointInfo> routingTable;
+	private Map<String, ServerTCPThread> routingTableTCP;
+	
 	public ObservableList<String> activeUser;
 	
 	public ServerData() {
-		routingTable = new HashMap<>();
+		routingTableTCP = new HashMap<>();
 		userPasswords = new HashMap<>();
 		activeUser = FXCollections.observableArrayList();
 	}
 	
-	public void addRoutingInfo(String clientName, String address, String host) {
-		EndpointInfo endpointInfo = new EndpointInfo(address, host);
-		routingTable.put(clientName, endpointInfo);
+	public ServerTCPThread getClientThread(String clientName) {
+		return routingTableTCP.get(clientName);
+	}
+	
+//	public void addUDPRoutingInfo(String clientName, String address, String host) {
+//		EndpointInfo endpointInfo = new EndpointInfo(address, host);
+//		routingTableUDP.put(clientName, endpointInfo);
+//	}
+	
+	public void addTCPRoutingInfo(String client, ServerTCPThread thread) {
+		routingTableTCP.put(client, thread);
 	}
 	
 	public boolean login(String name, String passwort) {

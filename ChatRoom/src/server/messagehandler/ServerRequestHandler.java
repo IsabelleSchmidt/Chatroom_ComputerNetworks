@@ -4,6 +4,6 @@ import message.Message;
 import server.ServerData;
 import server.ServerTCPThread;
 
-public interface ServerMessageHandler {
-	Message handle(Message m, ServerData data, ServerTCPThread clientThread);
+public interface ServerRequestHandler {
+	void handle(Message m, ServerData data, ServerTCPThread clientThread);
 }

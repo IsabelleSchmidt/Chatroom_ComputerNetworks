@@ -1,14 +1,20 @@
 package server.messagehandler;
 
 import message.Message;
+import message.MessageGenerator;
 import server.ServerData;
+import server.ServerTCPThread;
 
-public class DeclineRequestHandler implements ServerMessageHandler {
+public class DeclineRequestHandler implements ServerRequestHandler {
 
 	@Override
-	public Message handle(Message m, ServerData data) {
-		// TODO Auto-generated method stub
-		return null;
+	public void handle(Message m, ServerData data, ServerTCPThread clientThread) {
+		String requestSender = m.getAttributes().get("requestSender");
+		String requestRecipient = clientThread.getClientName();
+		
+		Message response = MessageGenerator.requestDeclined(requestRecipient);
+		
+		data.getClientThread(requestSender).sendMessage(response);
 	}
 
 

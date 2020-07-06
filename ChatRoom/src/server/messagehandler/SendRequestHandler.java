@@ -1,20 +1,25 @@
 package server.messagehandler;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import message.Message;
 import message.MessageGenerator;
 import server.ServerData;
+import server.ServerTCPThread;
 
-public class SendRequestHandler implements ServerMessageHandler {
+public class SendRequestHandler implements ServerRequestHandler {
 
 	@Override
-	public Message handle(Message m, ServerData data) {
-		String clientName = m.getAttributes().get("requestRecipient");
+	public void handle(Message m, ServerData data, ServerTCPThread clientThread) {
+		String recipientName = m.getAttributes().get("requestRecipient");
 		String address = m.getAttributes().get("senderAddress");
 		String host = m.getAttributes().get("senderPort");
-		data.addRoutingInfo(clientName, address, host);
 		
-		//TODO: Jetzt geht die Message an den Client zurück. Es soll aber an den anderen Client weiterleitet werden
-		return MessageGenerator.newRequest(clientName);
+		// Request Transfer
+		Message response = MessageGenerator.newRequest(recipientName, address, host);
+		data.getClientThread(recipientName).sendMessage(response);
+		
 	}
 
 

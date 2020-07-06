@@ -9,6 +9,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import message.Chunk;
 import message.Status;
+import server.EndpointInfo;
 
 /**
  * Wird pro Message gestartet
@@ -18,7 +19,7 @@ import message.Status;
 public class ClientChunkThread extends Thread {
 	
 	DatagramSocket udpSocket;
-	String recipient;
+	EndpointInfo recipientInfo;
 	Chunk[] chunks;
 	Status[] acks;
 	Timer timeoutTimer;
@@ -28,9 +29,9 @@ public class ClientChunkThread extends Thread {
 	
 	private final int timeOut = 5000; // time of timeout in milliseconds
 	
-	public ClientChunkThread(DatagramSocket udpSocket, String recipient, Chunk[] chunks) {
+	public ClientChunkThread(DatagramSocket udpSocket, EndpointInfo recipientInfo, Chunk[] chunks) {
 		this.udpSocket = udpSocket;
-		this.recipient = recipient;
+		this.recipientInfo = recipientInfo;
 		this.chunks = chunks;
 		this.acks = new Status[chunks.length];
 		this.timeoutTimer = new Timer(true);
@@ -87,7 +88,7 @@ public class ClientChunkThread extends Thread {
 	public void sendMessage(Chunk chunk) {
 		DatagramPacket packet = new DatagramPacket(
 									chunk.toString().getBytes(), chunk.toString().length(), 
-									serverIP, serverPort);
+									recipientInfo.getAddress(), recipientInfo.getPort());
 		try {
 			udpSocket.send(packet);
 		} catch (IOException e) {

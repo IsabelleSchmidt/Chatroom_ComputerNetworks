@@ -3,7 +3,7 @@ package message;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ChatMessage {
+public class ChatMessage implements Comparable<ChatMessage> {
 	
 	String userName;
 	String text;
@@ -33,6 +33,11 @@ public class ChatMessage {
 
 	public String getTime() {
 		return time;
+	}
+
+	@Override
+	public int compareTo(ChatMessage other) {
+		return 0;
 	}
 
 }
