@@ -1,9 +1,6 @@
 package view;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import client.Client;
 import javafx.animation.ParallelTransition;
@@ -25,6 +22,25 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
 import server.Server;
+
+/**
+ * TODO:
+ * 1. activeUserListView wird nur bei dem 1 User angezeigt, da nur er einen Zugriff auf Server hat.
+ * evtl. Message vom Server implementieren, die mit der gleich nach der Einlogge-Bestaetigung an den Client geschickt wird sowie
+ * jedes mal, wenn neue Clients dazukommen.
+ * 
+ * 2. chatRoomListView soll bei dem Absende-Client gleich nach dem Absenden angezeigt werden, bei dem Empfaenger
+ * gleich nachdem alle Chunks angekommen sind. (Alle angekommenen Chat Messages liegen hier -> client.getChatData(newValue).getChatHistory()
+ * 
+ * 
+ * 3. Da Stop-and-Wait Logik ausgenommen wurde, bekommt GUI jetzt keine returns in Methoden,
+ * aus denen die Anfrage an den Server abgeschickt wurde. Alle Server-Responses werden in der Klasse Client, Methode handleMessage()
+ * bearbeitet. D.h. GUI neu verknuepfen.
+ * 
+ * 4. GUI Loesung fuer Chat-Anfragen implementieren. Gerade wird die Anfrage automatisch angenommen.
+ *
+ */
+
 
 public class ChatroomController {
 
@@ -76,15 +92,17 @@ public class ChatroomController {
 	private Client client;
 	private Server server;
 	boolean isStarted = false;
-	List<Integer> clientPortNummer;
-	final int MAX_CLIENT = 6;
+//	List<Integer> clientPortNummer;
+//	final int MAX_CLIENT = 6;
+	int clientUDPPort;
 	
 	public ChatroomController() {
-		clientPortNummer = new ArrayList<>();
-		int startValue = 1201;
-		for (int i = 0; i < MAX_CLIENT; i++) {
-			clientPortNummer.add(startValue + i);
-		}
+//		clientPortNummer = new ArrayList<>();
+//		int startValue = 1201;
+//		for (int i = 0; i < MAX_CLIENT; i++) {
+//			clientPortNummer.add(startValue + i);
+//		}
+		
 	}
 
 	public Button getStartServer() {
@@ -98,32 +116,29 @@ public class ChatroomController {
 		String name = username.getText();
 		String passwort = password.getText();
 		
-		if (clientPortNummer.size() == 0) {
-			informationLabel.setText("Maximale Anzahl von Clients erreicht.");
-		} else if (name != "" && passwort != "") {
+		// Client UDP Port wird random generiert
+		clientUDPPort = (int) (Math.random() * 2123) + 1201; 
+		System.out.println("VC: UDP port: " + clientUDPPort);
 		
-			int clientPort = clientPortNummer.get(0);
-			clientPortNummer.remove(0);
-			this.client = new Client(name, clientPort);
-	
-			try {
-				client.startTCP();
-				System.out.println("Client wurde gestartet");
-			} catch (IOException e) {
-				informationLabel.setText("Bitte erstmal den Server starten");
-				e.printStackTrace();
-			}
-			try {
-				if (client.login(name, passwort)) {
-					scrollUp();
-				} else {
-					informationLabel.setText("Bitte prüfe nochmal deine Daten.");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		
+		this.client = new Client(name, clientUDPPort);
+
+		try {
+			client.startTCP();
+			System.out.println("Client wurde gestartet");
+		} catch (IOException e) {
+			informationLabel.setText("Bitte erstmal den Server starten");
+			e.printStackTrace();
 		}
+		try {
+			if (client.login(name, passwort)) {
+				scrollUp();
+			} else {
+				informationLabel.setText("Bitte prüfe nochmal deine Daten.");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	@FXML
@@ -132,35 +147,31 @@ public class ChatroomController {
 		String passwort = password.getText();
 		System.out.println("ChatRoomController: " + username.getText() + ", " + password.getText());
 
-		if (clientPortNummer.size() == 0) {
-			informationLabel.setText("Maximale Anzahl von Clients erreicht.");
-		} else if (name != "" && passwort != "") { //TODO: anpassen, funktioniert nicht
-			
-			int clientPort = clientPortNummer.get(0);
-			clientPortNummer.remove(0);
-			this.client = new Client(name, clientPort);
-			
-			this.client = new Client(name, clientPort);
-			try {
-				client.startTCP();
-				System.out.println("Client wurde gestartet");
-			} catch (IOException e) {
-				informationLabel.setText("Bitte erstmal den Server starten");
-				e.printStackTrace();
-			}
-	
-			try {
-				if (client.registrier(name, passwort)) {
-					scrollUp();
-				} else {
-					informationLabel.setText("Der Benutzername ist leider schon vergeben");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		// Client UDP Port wird random generiert
+		clientUDPPort = (int) (Math.random() * 2123) + 1201;
+		System.out.println("VC: UDP port: " + clientUDPPort);
+		
+		this.client = new Client(name, clientUDPPort);
+		
+		try {
+			client.startTCP();
+			System.out.println("Client wurde gestartet");
+		} catch (IOException e) {
+			informationLabel.setText("Bitte erstmal den Server starten");
+			e.printStackTrace();
 		}
 
+		try {
+			if (client.registrier(name, passwort)) {
+				scrollUp();
+			} else {
+				informationLabel.setText("Der Benutzername ist leider schon vergeben");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
+
 	
 	@FXML
 	void SetOnActionAnfrageButton(ActionEvent event) {
@@ -170,23 +181,16 @@ public class ChatroomController {
 
 	@FXML
 	void SetOnActionSendButton(ActionEvent event) {
-		if (typeMessageField.getText().equals("accept")) {
+		if (typeMessageField.getText() != null) {
 			String user = activeUserListView.getSelectionModel().getSelectedItem();
-			client.acceptRequest(user);
+			client.sendTextMessage(user, typeMessageField.getText());
 			typeMessageField.clear();
-		} else {
-			if (typeMessageField.getText() != null) {
-				String user = activeUserListView.getSelectionModel().getSelectedItem();
-				client.sendTextMessage(user, typeMessageField.getText());
-				typeMessageField.clear();
-			}
+			
 		}
-		
 	}
 
 	@FXML
 	void SetStartServerOnAction(ActionEvent event) {
-
 		server = new Server();
 		server.start();
 		
@@ -208,7 +212,6 @@ public class ChatroomController {
 		String name = username.getText();
 		client.logout(name);
 		
-		
 		scrollDown();
 	}
 
@@ -216,6 +219,7 @@ public class ChatroomController {
 		sendButton.setDisable(true);
 		anfrageButton.setDisable(true);
 		
+		// Wenn man auf den Namen klickt, wird die Chat-Historie angezeigt
 		activeUserListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 			
 			@Override

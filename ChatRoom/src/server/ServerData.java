@@ -29,6 +29,7 @@ public class ServerData {
 //	}
 	
 	public void addTCPRoutingInfo(String client, ServerTCPThread thread) {
+		System.out.println("ServerData: routing info:" + client + ", " + thread.getClientSocket().getPort());
 		routingTableTCP.put(client, thread);
 	}
 	

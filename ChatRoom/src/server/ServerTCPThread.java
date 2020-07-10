@@ -1,8 +1,10 @@
 package server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,8 +32,8 @@ public class ServerTCPThread extends Thread {
 	private ServerData serverData;
 	private boolean tcpSocketOn = true;
 	
-	private DataInputStream inStream;
-	private DataOutputStream outStream;
+	private BufferedReader reader;
+	private BufferedWriter writer;
 	
 	private Map<Command, ServerMessageHandler> messageHandlerMap;
 	private Map<Command, ServerRequestHandler> requestHandlerMap;
@@ -56,26 +58,26 @@ public class ServerTCPThread extends Thread {
 	@Override
 	public void run() {
 			try {
-				inStream = new DataInputStream(clientSocket.getInputStream());
-				outStream = new DataOutputStream(clientSocket.getOutputStream());
+				reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 			
 				while(tcpSocketOn) {
- 					handleRequest();
+					final String line;
+					
+					line = reader.readLine();
+					if (line == null) {
+						break;
+					}
+					handleRequest(line);
 				}
-
-				inStream.close();
-				outStream.close();
 				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 	}
 	
-	public void handleRequest() throws IOException {
-		Message clientMessage;
-		String messageStr = inStream.readUTF();
-		
-		clientMessage = new Message(messageStr);
+	public void handleRequest(String line) throws IOException {
+		Message clientMessage = new Message(line);
 		
 		Command clientCommand = clientMessage.getCommand();
 		
@@ -102,8 +104,9 @@ public class ServerTCPThread extends Thread {
 	
 	public synchronized void sendMessage(Message m) {
 		try {
-			outStream.writeUTF(m.getRaw());
-			outStream.flush();
+			System.out.println("Server: " + m.getRaw());
+			writer.write(m.getRaw() + "\n");
+			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -130,4 +133,8 @@ public class ServerTCPThread extends Thread {
 		requestHandlerMap.put(Command.ACCEPT_REQUEST, new AcceptRequestHandler());
 	}
 
+	public Socket getClientSocket() {
+		return clientSocket;
+	}
+	
 }

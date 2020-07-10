@@ -1,8 +1,5 @@
 package server.messagehandler;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import message.Message;
 import message.MessageGenerator;
 import server.ServerData;
@@ -17,7 +14,7 @@ public class SendRequestHandler implements ServerRequestHandler {
 		String host = m.getAttributes().get("senderPort");
 		
 		// Request Transfer
-		Message response = MessageGenerator.newRequest(recipientName, address, host);
+		Message response = MessageGenerator.newRequest(clientThread.getClientName(), address, host);
 		data.getClientThread(recipientName).sendMessage(response);
 		
 	}

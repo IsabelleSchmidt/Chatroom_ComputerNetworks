@@ -9,6 +9,19 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+/**
+ * Anleitung.
+ * 1. Main starten.
+ * 2. Anmelde-View: Server starten, registrieren.
+ * 3. Nochmal das Programm starten. Nur registrieren (Server ist bereits an).
+ * 4. Zurueck zum 1. Client gehen.
+ * 5. Den neuen Client auswaehlen, Anfrage-Button klicken -> Anfrage wird vom anderem Client automatisch bestaetigt.
+ * 6. Vom 1. Client die Nachrichten schreiben und abschicken.
+ * 7. Um die Nachrichten anzuschauen, in der Liste von den aktiven Usern den 1. Client (sich selbst) auswaehlen und dann
+ * wieder den Konversations-Partner.
+ *
+ */
+
 public class Main extends Application {
 
 

@@ -1,6 +1,7 @@
 package message;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -66,7 +67,7 @@ public class Message {
 	
     }
 	
-	public static Message fromChunks(Chunk[] chunks) {
+	public static Message fromChunks(List<Chunk> chunks) {
         String raw = "";
         for (Chunk chunk : chunks) {
             raw += chunk.getContent();

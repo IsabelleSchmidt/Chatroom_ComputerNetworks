@@ -23,6 +23,7 @@ public class ChatData {
 		this.otherAddress = clientAddress;
 		this.otherPort = clientPort;
 		chatHistory = new ArrayList<>();
+		aktChunks = new ArrayList<>();
 	}
 	
 	public void addChunk(Chunk chunk) {
@@ -31,8 +32,10 @@ public class ChatData {
 		
 		if (chunk.isEnd()) {
 			if (aktChunks.size() == (chunk.getChunkNr() + 1)) {
-				Message message = Message.fromChunks((Chunk[]) aktChunks.toArray());
+				
+				Message message = Message.fromChunks(aktChunks);
 				ChatMessage chatMessage = new ChatMessage(otherClient, message.getAttributes().get("text"));
+				System.out.println("ChatData: addChunk(): message received " + chatMessage.toString());
 				addMessage(chatMessage);
 			}
 		}

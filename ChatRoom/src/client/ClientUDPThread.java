@@ -21,23 +21,25 @@ public class ClientUDPThread extends Thread {
 	private boolean socketOn;
 	private Thread chatListener;
 	private ClientChunkThread chunkThread;
+	private int udpPort;
 	
 	private String thisClientName;
 	protected Map<EndpointInfo, ChatData> chatData;
 	protected Map<String, EndpointInfo> connectionData;
 	
-	public ClientUDPThread(String thisClient) {
+	public ClientUDPThread(String thisClient, int udpPort) {
 		this.chatData = new HashMap<>();
 		this.connectionData = new HashMap<>();
 		this.thisClientName = thisClient;
 		this.socketOn = true;
+		this.udpPort = udpPort;
 		initChatListener();
 	}
 	
 	@Override
 	public void run() {
 		try {
-			udpSocket = new DatagramSocket();
+			udpSocket = new DatagramSocket(udpPort);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
@@ -72,14 +74,11 @@ public class ClientUDPThread extends Thread {
 						udpSocket.receive(reply);
 						String messageStr = new String(reply.getData());
 					    System.out.println("CLIENT: Message from " + reply.getPort() + ": " + messageStr + "...");
-					    
-					    
+
 					   
-					    if (messageStr.startsWith("CHUNK")) {
+					    if (messageStr.startsWith("CHUNK|")) {
 					    	Chunk clientChunk = Chunk.parse(messageStr);
 							int chunkNr = clientChunk.getChunkNr();
-							chunkThread.acks[chunkNr] = Status.ACKED;
-							System.out.println("CLIENT: Nummer " + chunkNr + " is acked.");
 							saveMessage(clientChunk, reply.getAddress(), reply.getPort());
 							
 							Message message = MessageGenerator.chunkReceived(thisClientName, chunkNr);

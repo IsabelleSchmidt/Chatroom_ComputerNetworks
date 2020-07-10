@@ -1,13 +1,14 @@
 package client;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Map;
 
 import message.ChatMessage;
 import message.Command;
@@ -24,12 +25,8 @@ public class Client {
 	
 	//TCP
 	private Socket socket;
-//	private BufferedWriter writer;
-//    private BufferedReader reader;
-	private DataInputStream inStream;
-	private DataOutputStream outStream;
-
-	private boolean clientOnline;
+	private BufferedWriter writer;
+    private BufferedReader reader;
 	private Thread listenThread;
 	
 	// UDP
@@ -57,8 +54,7 @@ public class Client {
 		// Init Client port
 		this.clientPort = port;
 		
-		udpThread = new ClientUDPThread(name);
-		listen();
+		udpThread = new ClientUDPThread(name, port);
 	}
 	
 	public void startTCP() throws UnknownHostException, IOException {
@@ -67,159 +63,65 @@ public class Client {
 		// Socket, Output, Input, Reader
 		try {
 			socket = new Socket(serverAddress.getHostAddress(), serverPort);
-			inStream = new DataInputStream(socket.getInputStream());
-			outStream = new DataOutputStream(socket.getOutputStream());
-//			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-//			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			listen();
 
 		} catch (Exception e) {
 			System.out.println("Exception" + e);
 		}
 	}
-	
-	public void closeTCPSocket() {
-		try {
-			outStream.close();
-			outStream.close();
-			socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	public boolean registrier(String name, String passwort) throws IOException {
-		Message clientMessage;
-		Message serverMessage;
-		
-		clientMessage = MessageGenerator.register(name, passwort);
+		Message clientMessage = MessageGenerator.register(name, passwort);
 		System.out.println(this.name + ": send to Server - " + clientMessage.getRaw());
+		writeMessage(clientMessage);
 		
-		try {
-			outStream.writeUTF(clientMessage.serialize());
-			outStream.flush();
-
-			serverMessage = new Message(inStream.readUTF());
-			System.out.println(this.name + ": from Server - " + serverMessage.getRaw());
-
-			if (serverMessage.getCommand() == Command.REGISTER_ACCEPTED) {
-				return true;
-			} else if (serverMessage.getCommand() == Command.REGISTER_DECLINED) {
-				return false;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		clientOnline = true;
-		listen();
-		return false;
+		// TODO: Method zu void machen, GUI anhand des Server-Message in der Methode handleMessage() aendern
+		return true;
 	}
 
 	public boolean login(String name, String passwort) throws IOException {
-		Message clientMessage;
-		Message serverMessage;
-
-		clientMessage = MessageGenerator.login(name, passwort);
-		try {
-			outStream.writeUTF(clientMessage.serialize());
-			outStream.flush();
-			
-			serverMessage = new Message(inStream.readUTF());
-			System.out.println(this.name + ": from Server - " + serverMessage.getRaw());
-
-			if (serverMessage.getCommand() == Command.LOGIN_ACCEPTED) {
-				return true;
-			} else if (serverMessage.getCommand() == Command.LOGIN_DECLINED) {
-				return false;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Message clientMessage = MessageGenerator.login(name, passwort);
+		writeMessage(clientMessage);
 		
-		clientOnline = true;
-		listen();
-		return false;
+		// TODO: Method zu void machen, GUI anhand des Server-Message in der Methode handleMessage() aendern
+		return true;
 	}
 	
 	public boolean logout(String name) {
-		Message clientMessage;
-		Message serverMessage;
+		Message clientMessage = MessageGenerator.logout(name);
+		writeMessage(clientMessage);
 		
-		clientMessage = MessageGenerator.logout(name);
-		
-		try {
-			outStream.writeUTF(clientMessage.serialize());
-			outStream.flush();
-			
-			serverMessage = new Message(inStream.readUTF());
-			System.out.println(this.name + ": from Server - " + serverMessage.getRaw());
-			
-			if (serverMessage.getCommand() == Command.LOGEDOUT) {
-				return true;
-			}else {
-				return false;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		clientOnline = false;
-		closeTCPSocket();
-		return false;
+		// TODO: Method zu void machen, GUI anhand des Server-Message in der Methode handleMessage() aendern
+		return true;
 	}
 	
-	public boolean sendChatRequest(String otherClientName) {
-		Message clientMessage;
-		Message serverMessage;
-		
-		clientMessage = MessageGenerator.sendRequest(otherClientName, clientAddress, clientPort);
+	public void sendChatRequest(String otherClientName) {
+		Message clientMessage = MessageGenerator.sendRequest(otherClientName, clientAddress, clientPort);
 		
 		System.out.println(this.name + ": send to Server - " + clientMessage.getRaw());
-		try {
-			outStream.writeUTF(clientMessage.getRaw());
-			outStream.flush();
-			
-			serverMessage = new Message(inStream.readUTF());
-			System.out.println(this.name + ": from Server - " + serverMessage.getRaw());
-			
-			if (serverMessage.getCommand() == Command.REQUEST_ACCEPTED) {
-				System.out.println(this.name + ": Request accepted. Start new chat.");
-				String name = serverMessage.getAttributes().get("requestRecipient"); //name
-				String address = serverMessage.getAttributes().get("recipientAddress"); //address
-				String port = serverMessage.getAttributes().get("recipientPort");
-				
-				newChat(name, address, port);
-				return true;
-				
-			} else if (serverMessage.getCommand() == Command.REQUEST_DECLINED) {
-				System.out.println(this.name + ": Request declined.");
-				return false;
-			}
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
-		
+		writeMessage(clientMessage);
 	}
 	
-	public void acceptRequest(String requestSender) {
+	public void acceptRequest(String requestSender, String senderAddress, String senderPort) {
 		Message clientMessage = MessageGenerator.acceptRequest(requestSender, clientAddress, clientPort);
 		System.out.println(this.name + ": sent to Server - " + clientMessage.getRaw());
 		
-		try {
-			outStream.writeUTF(clientMessage.serialize());
-			outStream.flush();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		writeMessage(clientMessage);
+		newChat(requestSender, senderAddress, senderPort);
+	}
+	
+	public void declineRequest(String requestSender) {
+		Message clientMessage = MessageGenerator.declineRequest(requestSender);
+		System.out.println(this.name + ": sent to Server - " + clientMessage.getRaw());
 		
-		newChat(requestSender, clientAddress, serverPort);
-		
+		writeMessage(clientMessage);
 	}
 
 	private void newChat(String otherClient, String clientAddress, String clientPort) {
+		System.out.println(String.format("%s: start new chat with %s (port:%s).", this.name, otherClient, clientPort));
+		
 		int port = Integer.parseInt(clientPort);
 		InetAddress address = null;
 		try {
@@ -233,21 +135,9 @@ public class Client {
 		EndpointInfo info = new EndpointInfo(address, port);
 		
 		// Start new chat thread
-		udpThread.start();
 		udpThread.addConnectionData(otherClient, info);
 		udpThread.addChatData(info, chatData);
-	}
-	
-	private void newChat(String otherClient, InetAddress clientAddress, int clientPort) {
-		// Create chat data
-		ChatData chatData = new ChatData(otherClient, clientAddress, clientPort);
-		EndpointInfo info = new EndpointInfo(clientAddress, clientPort);
-		
-		// Start new chat thread
 		udpThread.start();
-		udpThread.addConnectionData(otherClient, info);
-		udpThread.addChatData(info, chatData);
-
 	}
 	
 	public void sendTextMessage(String otherClient, String text) {
@@ -260,17 +150,25 @@ public class Client {
 	}
 	
 	public void listen() {
-        
+		if (listenThread != null) {
+            listenThread.interrupt();
+            listenThread = null;
+        }
+    	
         listenThread = new Thread(() -> {
-            while (clientOnline) {
+            while (!Thread.interrupted()) {
                 try {
-                	Message clientMessage = new Message(inStream.readUTF());
-            		System.out.println(this.name + ": from Server - " + clientMessage.getRaw());
-            		
-                    handleMessage(clientMessage);
+                    final String raw = reader.readLine();
+                    if (Thread.interrupted()) {
+                        break;
+                    }
+                    if (raw == null) {
+                        break;
+                    }
+                    handleMessage(raw);
                     
                 } catch (SocketException e) {
-                    if (!clientOnline) {
+                    if (Thread.interrupted()) {
                         System.out.println("Thread endet wie gew¸nscht.");
                     } else {
                     	System.out.println("Client: Server is not available...");
@@ -284,20 +182,77 @@ public class Client {
         });
         
         listenThread.start();
-        
 	}
 	
-	public boolean handleMessage(Message serverMessage) {
+	public void handleMessage(String line) throws IOException {
+		Message serverMessage = new Message(line);
 		Command serverCommand = serverMessage.getCommand();
+		System.out.println(serverMessage.getRaw());
 		
 		switch (serverCommand) {
+		case REGISTER_ACCEPTED:
+			// TODO: GUI aendern
+			break;
+		case REGISTER_DECLINED:
+			// TODO: GUI aendern
+			break;
+		case LOGIN_ACCEPTED:
+			// TODO: GUI aendern
+			break;
+		case LOGIN_DECLINED:
+			// TODO: GUI aendern
+			break;
+		case REQUEST_ACCEPTED:
+			System.out.println(this.name + ": Request accepted. Start new chat.");
+			String name = serverMessage.getAttributes().get("requestRecipient"); //name
+			String address = serverMessage.getAttributes().get("recipientAddress"); //address
+			String port = serverMessage.getAttributes().get("recipientPort");
+			
+			newChat(name, address, port);
+			break;
+		case REQUEST_DECLINED:
+			System.out.println(this.name + ": Request declined.");
+			// TODO: GUI aendern
+			break;
 		case NEW_REQUEST:
-			acceptRequest(serverMessage.getAttributes().get("requestSender"));
+			// TODO: Auf GUI die neue Anfrage anzeigen ->
+			// User: Annehmen -> acceptRequest(), ablehnen -> declineRequest()
+			// Momentan wird die Anfrage automatisch angenommen:
+			String requestSender = serverMessage.getAttributes().get("requestSender");
+			String senderAddress = serverMessage.getAttributes().get("senderAddress");
+			String senderPort = serverMessage.getAttributes().get("senderPort");
+			acceptRequest(requestSender, senderAddress, senderPort);
+			break;
+		case LOGEDOUT:
+			closeTCPSocket();
 			break;
 		default:
 			break;
 		}
-		return true;
+	}
+	
+	private void writeMessage(Message message) {
+    	try {
+	        writer.write(message.getRaw() + "\n");
+	        writer.flush();
+    	} catch (IOException e) {
+    		System.out.println(this.name + "Client: Server is not available...");
+    		try {
+				closeTCPSocket();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+    	}
+    }
+	
+	
+	public void closeTCPSocket() throws IOException {
+		if (listenThread != null) {
+            listenThread.interrupt();
+            System.out.println("Client: Schlieﬂe Socket...");
+            socket.close();
+            listenThread = null;
+        }
 	}
 	
 	public ChatData getChatData(String name) {
@@ -307,5 +262,4 @@ public class Client {
 		return null;
 	}
 	
-
 }

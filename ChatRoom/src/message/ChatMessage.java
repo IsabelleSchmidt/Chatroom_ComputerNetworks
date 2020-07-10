@@ -20,7 +20,7 @@ public class ChatMessage implements Comparable<ChatMessage> {
 	
 	@Override
 	public String toString() {
-		return String.format("%s\n\n%s\n", userName, text, time);
+		return String.format("%s	%s\n\n%s", userName, time, text);
 	}
 
 	public String getUserName() {

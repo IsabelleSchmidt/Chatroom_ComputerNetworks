@@ -24,7 +24,7 @@ public class ClientChunkThread extends Thread {
 	Status[] acks;
 	Timer timeoutTimer;
 	
-	InetAddress serverIP;
+	InetAddress ipAddress;
 	int serverPort = 8888;
 	
 	private final int timeOut = 5000; // time of timeout in milliseconds
@@ -37,7 +37,7 @@ public class ClientChunkThread extends Thread {
 		this.timeoutTimer = new Timer(true);
 		
 		try {
-			this.serverIP = InetAddress.getByName("localhost");
+			this.ipAddress = InetAddress.getByName("localhost");
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
@@ -88,7 +88,7 @@ public class ClientChunkThread extends Thread {
 	public void sendMessage(Chunk chunk) {
 		DatagramPacket packet = new DatagramPacket(
 									chunk.toString().getBytes(), chunk.toString().length(), 
-									recipientInfo.getAddress(), recipientInfo.getPort());
+									ipAddress, recipientInfo.getPort());
 		try {
 			udpSocket.send(packet);
 		} catch (IOException e) {
