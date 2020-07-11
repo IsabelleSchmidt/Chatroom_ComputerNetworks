@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import message.ChatMessage;
 import message.Chunk;
 import message.Message;
@@ -15,14 +17,14 @@ public class ChatData {
 	private String otherClient;
 	private InetAddress otherAddress;
 	private int otherPort;
-	private List<ChatMessage> chatHistory;
+	private ObservableList<ChatMessage> chatHistory;
 	private List<Chunk> aktChunks;
 	
 	public ChatData(String userName, InetAddress clientAddress, int clientPort) {
 		this.otherClient = userName;
 		this.otherAddress = clientAddress;
 		this.otherPort = clientPort;
-		chatHistory = new ArrayList<>();
+		chatHistory = FXCollections.observableArrayList();
 		aktChunks = new ArrayList<>();
 	}
 	
@@ -49,7 +51,8 @@ public class ChatData {
 		return otherClient;
 	}
 
-	public List<ChatMessage> getChatHistory() {
+	public ObservableList<ChatMessage> getMessages() {
+		System.out.println(chatHistory);
 		return chatHistory;
 	}
 

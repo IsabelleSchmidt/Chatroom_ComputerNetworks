@@ -21,9 +21,9 @@
                <children>
                   <Pane prefHeight="800.0" prefWidth="900.0" style="-fx-background-color: #F0FFF0;">
                      <children>
-                        <ListView fx:id="activeUserListView" layoutX="641.0" layoutY="70.0" prefHeight="598.0" prefWidth="247.0" style="-fx-background-color: #CDC1C5;" />
+                        <ListView fx:id="activeUserListView" layoutX="641.0" layoutY="70.0" prefHeight="598.0" prefWidth="247.0" />
                         <ScrollBar id="userList" layoutX="870.0" layoutY="71.0" orientation="VERTICAL" prefHeight="596.0" prefWidth="17.0" />
-                        <ListView id="chatList" fx:id="chatRoomListView" layoutX="11.0" layoutY="70.0" prefHeight="598.0" prefWidth="617.0" style="-fx-background-color: #EED5D2;" />
+                        <ListView id="chatList" fx:id="chatRoomListView" layoutX="11.0" layoutY="70.0" prefHeight="598.0" prefWidth="617.0" />
                         <TextArea id="messager" fx:id="typeMessageField" layoutX="12.0" layoutY="678.0" prefHeight="75.0" prefWidth="617.0" style="-fx-background-color: #CDC1C5;" />
                         <Button id="sendButton" fx:id="sendButton" layoutX="568.0" layoutY="761.0" mnemonicParsing="false" onAction="#SetOnActionSendButton" style="-fx-background-color: #CDC1C5;" text="Senden" />
                         <Button id="anfrageButton" fx:id="anfrageButton" layoutX="468.0" layoutY="761.0" mnemonicParsing="false" onAction="#SetOnActionAnfrageButton" style="-fx-background-color: #CDC1C5;" text="Anfrage" />
@@ -34,45 +34,45 @@
                   </Pane>
                </children>
             </AnchorPane>
+            <AnchorPane fx:id="startPane" prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Pane prefHeight="800.0" prefWidth="900.0" style="-fx-background-color: #F0FFF0;">
+                     <children>
+                        <Label layoutX="302.0" layoutY="215.0" prefHeight="144.0" prefWidth="297.0" text="CHATROOM" textFill="#bc7ea5">
+                           <font>
+                              <Font size="54.0" />
+                           </font>
+                        </Label>
+                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c1cdc1" height="143.0" layoutX="302.0" layoutY="350.0" stroke="TRANSPARENT" strokeType="INSIDE" width="298.0" />
+                        <PasswordField fx:id="password" layoutX="343.0" layoutY="443.0" prefHeight="27.0" prefWidth="218.0" />
+                        <Label layoutX="350.0" layoutY="420.0" text="Passwort">
+                           <font>
+                              <Font size="17.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="username" layoutX="342.0" layoutY="384.0" prefHeight="27.0" prefWidth="217.0" />
+                        <Label layoutX="350.0" layoutY="360.0" text="Benutzername">
+                           <font>
+                              <Font size="17.0" />
+                           </font>
+                        </Label>
+                        <Button fx:id="registerButton" layoutX="302.0" layoutY="513.0" mnemonicParsing="false" onAction="#SetOnActionRegisterButton" style="-fx-background-color: #C1CDC1;" text="Registrieren">
+                           <font>
+                              <Font size="17.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="loginButton" layoutX="428.0" layoutY="513.0" mnemonicParsing="false" onAction="#SetOnActionLoginButton" style="-fx-background-color: #C1CDC1 #C1CDC1;" text="Login">
+                           <font>
+                              <Font size="17.0" />
+                           </font>
+                        </Button>
+                        <Label id="rückmeldung" fx:id="informationLabel" layoutX="304.0" layoutY="332.0" text="Hello friend." />
+                        <Button fx:id="startServer" layoutX="25.0" layoutY="22.0" mnemonicParsing="false" onAction="#SetStartServerOnAction" style="-fx-background-color: #C1CDC1 #C1CDC1;" text="starte Server" />
+                     </children>
+                  </Pane>
+               </children>
+            </AnchorPane>
          </children>
       </StackPane>
-      <AnchorPane fx:id="startPane" prefHeight="200.0" prefWidth="200.0">
-         <children>
-            <Pane prefHeight="800.0" prefWidth="900.0" style="-fx-background-color: #F0FFF0;">
-               <children>
-                  <Label layoutX="302.0" layoutY="215.0" prefHeight="144.0" prefWidth="297.0" text="CHATROOM" textFill="#bc7ea5">
-                     <font>
-                        <Font size="54.0" />
-                     </font>
-                  </Label>
-                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c1cdc1" height="143.0" layoutX="302.0" layoutY="350.0" stroke="TRANSPARENT" strokeType="INSIDE" width="298.0" />
-                  <PasswordField fx:id="password" layoutX="343.0" layoutY="443.0" prefHeight="27.0" prefWidth="218.0" />
-                  <Label layoutX="350.0" layoutY="420.0" text="Passwort">
-                     <font>
-                        <Font size="17.0" />
-                     </font>
-                  </Label>
-                  <TextField fx:id="username" layoutX="342.0" layoutY="384.0" prefHeight="27.0" prefWidth="217.0" />
-                  <Label layoutX="350.0" layoutY="360.0" text="Benutzername">
-                     <font>
-                        <Font size="17.0" />
-                     </font>
-                  </Label>
-                  <Button fx:id="registerButton" layoutX="302.0" layoutY="513.0" mnemonicParsing="false" onAction="#SetOnActionRegisterButton" style="-fx-background-color: #C1CDC1;" text="Registrieren">
-                     <font>
-                        <Font size="17.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="loginButton" layoutX="428.0" layoutY="513.0" mnemonicParsing="false" onAction="#SetOnActionLoginButton" style="-fx-background-color: #C1CDC1 #C1CDC1;" text="Login">
-                     <font>
-                        <Font size="17.0" />
-                     </font>
-                  </Button>
-                  <Label id="rückmeldung" fx:id="informationLabel" layoutX="304.0" layoutY="332.0" text="Hello friend." />
-                  <Button fx:id="startServer" layoutX="25.0" layoutY="22.0" mnemonicParsing="false" onAction="#SetStartServerOnAction" style="-fx-background-color: #C1CDC1 #C1CDC1;" text="starte Server" />
-               </children>
-            </Pane>
-         </children>
-      </AnchorPane>
    </children>
 </AnchorPane>

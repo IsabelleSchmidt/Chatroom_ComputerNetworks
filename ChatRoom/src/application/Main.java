@@ -11,7 +11,7 @@ import javafx.stage.StageStyle;
 
 /**
  * Anleitung.
- * 1. Main starten.
+ * 1. Server starten, dann die Main
  * 2. Anmelde-View: Server starten, registrieren.
  * 3. Nochmal das Programm starten. Nur registrieren (Server ist bereits an).
  * 4. Zurueck zum 1. Client gehen.

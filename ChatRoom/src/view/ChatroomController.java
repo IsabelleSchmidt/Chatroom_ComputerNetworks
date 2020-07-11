@@ -21,6 +21,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
+import message.ChatMessage;
 import server.Server;
 
 /**
@@ -95,6 +96,7 @@ public class ChatroomController {
 //	List<Integer> clientPortNummer;
 //	final int MAX_CLIENT = 6;
 	int clientUDPPort;
+	boolean selected = false;
 	
 	public ChatroomController() {
 //		clientPortNummer = new ArrayList<>();
@@ -129,14 +131,54 @@ public class ChatroomController {
 			informationLabel.setText("Bitte erstmal den Server starten");
 			e.printStackTrace();
 		}
-		try {
-			if (client.login(name, passwort)) {
-				scrollUp();
-			} else {
-				informationLabel.setText("Bitte prüfe nochmal deine Daten.");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (client.isLogin()) {
+			scrollUp();
+			client.setLogin(false);
+			// Wenn man auf den Namen klickt, wird die Chat-Historie angezeigt
+						activeUserListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+							
+							@Override
+							public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+								sendButton.setDisable(false);
+								anfrageButton.setDisable(false);
+								
+								if (client.getChatData(newValue) != null) {
+									ObservableList<String> messages = FXCollections.observableArrayList();
+									client.getChatData(newValue).getMessages().stream().forEach(e -> messages.add(e.toString()));
+									
+									chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
+									chatRoomListView.setItems(messages);
+								}
+								
+								client.getChatData(newValue).getMessages().addListener(new ListChangeListener<ChatMessage>() {
+
+									@Override
+									public void onChanged(Change<? extends ChatMessage> arg0) {
+										ObservableList<String> messages = FXCollections.observableArrayList();
+										client.getChatData(newValue).getMessages().stream().forEach(e -> messages.add(e.toString()));
+										
+										chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
+										chatRoomListView.setItems(messages);
+										
+									}
+									
+								});
+								
+							}
+							
+							
+						});
+						client.getActiveUser().addListener(new ListChangeListener<String>() {
+							@Override
+							public void onChanged(Change<? extends String> arg0) {
+								System.out.println("USERSSSSS: ");
+								Platform.runLater(() -> {
+									activeUserListView.getItems().setAll(arg0.getList());
+								});
+							}
+						});
+		} else {
+			informationLabel.setText("Bitte pruefe nochmal deine Daten.");
 		}
 
 	}
@@ -161,15 +203,62 @@ public class ChatroomController {
 			e.printStackTrace();
 		}
 
-		try {
-			if (client.registrier(name, passwort)) {
-				scrollUp();
-			} else {
-				informationLabel.setText("Der Benutzername ist leider schon vergeben");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (client.isRegister()) {
+			scrollUp();
+			
+			sendButton.setDisable(true);
+			anfrageButton.setDisable(true);
+			
+			// Wenn man auf den Namen klickt, wird die Chat-Historie angezeigt
+			activeUserListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+				
+				@Override
+				public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+					sendButton.setDisable(false);
+					anfrageButton.setDisable(false);
+					
+					if (client.getChatData(newValue) != null) {
+						ObservableList<String> messages = FXCollections.observableArrayList();
+						client.getChatData(newValue).getMessages().stream().forEach(e -> messages.add(e.toString()));
+						
+						chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
+						chatRoomListView.setItems(messages);
+					}
+					
+					client.getChatData(newValue).getMessages().addListener(new ListChangeListener<ChatMessage>() {
+
+						@Override
+						public void onChanged(Change<? extends ChatMessage> arg0) {
+							ObservableList<String> messages = FXCollections.observableArrayList();
+							client.getChatData(newValue).getMessages().stream().forEach(e -> messages.add(e.toString()));
+							
+							chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
+							chatRoomListView.setItems(messages);
+							
+						}
+						
+					});
+					
+				}
+				
+				
+			});
+			client.getActiveUser().addListener(new ListChangeListener<String>() {
+				@Override
+				public void onChanged(Change<? extends String> arg0) {
+					System.out.println("USERSSSSS: ");
+					Platform.runLater(() -> {
+						activeUserListView.getItems().setAll(arg0.getList());
+					});
+				}
+			});
+			
+			
+			
+		} else {
+			informationLabel.setText("Der Benutzername ist leider schon vergeben");
 		}
+		
 	}
 
 	
@@ -211,31 +300,15 @@ public class ChatroomController {
 	void SetOnActionLogoutButton(ActionEvent event) {
 		String name = username.getText();
 		client.logout(name);
+		if (client.isLoggedout()) {
+			client.setLoggedout(false);
+			scrollDown();
+		}
 		
-		scrollDown();
+		
 	}
 
 	void scrollUp() {
-		sendButton.setDisable(true);
-		anfrageButton.setDisable(true);
-		
-		// Wenn man auf den Namen klickt, wird die Chat-Historie angezeigt
-		activeUserListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-			
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				sendButton.setDisable(false);
-				anfrageButton.setDisable(false);
-				
-				if (client.getChatData(newValue) != null) {
-					ObservableList<String> messages = FXCollections.observableArrayList();
-					client.getChatData(newValue).getChatHistory().stream().forEach(e -> messages.add(e.toString()));
-					
-					chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
-					chatRoomListView.setItems(messages);
-				}
-			}
-		});
 		
 		TranslateTransition tr1 = new TranslateTransition();
 		tr1.setDuration(Duration.millis(600));

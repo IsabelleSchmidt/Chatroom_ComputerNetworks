@@ -10,6 +10,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import message.ChatMessage;
 import message.Command;
 import message.Message;
@@ -22,6 +24,7 @@ public class Client {
 	private InetAddress serverAddress;
 	private int serverPort = 8888;
 	private String name;
+	public ObservableList<String> activeUser = FXCollections.observableArrayList();
 	
 	//TCP
 	private Socket socket;
@@ -34,6 +37,11 @@ public class Client {
 	private int clientPort;
 	private ClientUDPThread udpThread;
 	
+	// GUI
+	private boolean loggedout = false;
+	private boolean login = false;
+	private boolean register = true;
+
 	public Client(String name, int port) {
 		this.name = name;
 		
@@ -72,29 +80,19 @@ public class Client {
 		}
 	}
 
-	public boolean registrier(String name, String passwort) throws IOException {
+	public void registrier(String name, String passwort) throws IOException {
 		Message clientMessage = MessageGenerator.register(name, passwort);
-		System.out.println(this.name + ": send to Server - " + clientMessage.getRaw());
 		writeMessage(clientMessage);
-		
-		// TODO: Method zu void machen, GUI anhand des Server-Message in der Methode handleMessage() aendern
-		return true;
 	}
 
-	public boolean login(String name, String passwort) throws IOException {
+	public void login(String name, String passwort) throws IOException {
 		Message clientMessage = MessageGenerator.login(name, passwort);
 		writeMessage(clientMessage);
-		
-		// TODO: Method zu void machen, GUI anhand des Server-Message in der Methode handleMessage() aendern
-		return true;
 	}
 	
-	public boolean logout(String name) {
+	public void logout(String name) {
 		Message clientMessage = MessageGenerator.logout(name);
 		writeMessage(clientMessage);
-		
-		// TODO: Method zu void machen, GUI anhand des Server-Message in der Methode handleMessage() aendern
-		return true;
 	}
 	
 	public void sendChatRequest(String otherClientName) {
@@ -169,7 +167,7 @@ public class Client {
                     
                 } catch (SocketException e) {
                     if (Thread.interrupted()) {
-                        System.out.println("Thread endet wie gewünscht.");
+                        System.out.println("Thread endet wie gewï¿½nscht.");
                     } else {
                     	System.out.println("Client: Server is not available...");
                     }
@@ -191,16 +189,18 @@ public class Client {
 		
 		switch (serverCommand) {
 		case REGISTER_ACCEPTED:
-			// TODO: GUI aendern
+			register = true;
+			System.out.println("REGISTRIEREN");
 			break;
 		case REGISTER_DECLINED:
-			// TODO: GUI aendern
+			register = false;
+			System.out.println("REGISTRIEREN");
 			break;
 		case LOGIN_ACCEPTED:
-			// TODO: GUI aendern
+			login = true;
 			break;
 		case LOGIN_DECLINED:
-			// TODO: GUI aendern
+			login = false;
 			break;
 		case REQUEST_ACCEPTED:
 			System.out.println(this.name + ": Request accepted. Start new chat.");
@@ -224,10 +224,19 @@ public class Client {
 			acceptRequest(requestSender, senderAddress, senderPort);
 			break;
 		case LOGEDOUT:
+			loggedout = true;
 			closeTCPSocket();
 			break;
 		default:
-			break;
+		    System.out.println("line: " + line);
+		    if(!activeUser.contains(line)) {
+		    	activeUser.add(line);
+		    }else {
+		    	activeUser.remove(line);
+		    }
+		    System.out.println("activeUser Client: " + activeUser);
+		
+
 		}
 	}
 	
@@ -249,7 +258,7 @@ public class Client {
 	public void closeTCPSocket() throws IOException {
 		if (listenThread != null) {
             listenThread.interrupt();
-            System.out.println("Client: Schließe Socket...");
+            System.out.println("Client: Schlieï¿½e Socket...");
             socket.close();
             listenThread = null;
         }
@@ -260,6 +269,34 @@ public class Client {
 			return udpThread.chatData.get(udpThread.connectionData.get(name));
 		}
 		return null;
+	}
+	
+	public void setLoggedout(boolean loggedout) {
+		this.loggedout = loggedout;
+	}
+
+	public boolean isLoggedout() {
+		return loggedout;
+	}
+	
+	public boolean isLogin() {
+		return login;
+	}
+
+	public void setLogin(boolean login) {
+		this.login = login;
+	}
+	
+	public boolean isRegister() {
+		return register;
+	}
+
+	public void setRegister(boolean register) {
+		this.register = register;
+	}
+	
+	public ObservableList<String> getActiveUser() {
+		return activeUser;
 	}
 	
 }
