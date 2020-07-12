@@ -29,7 +29,7 @@ public class Message {
 		if (components.length >= 2) {
 			try {
 				String attributeLine = components[1];
-				for (String pair : attributeLine.split(",")) {
+				for (String pair : attributeLine.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")) {
 					String[] pairComponents = pair.split("=");
 					attributes.put(pairComponents[0], pairComponents[1]);
 				}

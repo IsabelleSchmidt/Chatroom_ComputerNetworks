@@ -275,7 +275,7 @@ public class ChatroomController {
 	void SetOnActionSendButton(ActionEvent event) {
 		if (typeMessageField.getText() != null) {
 			String user = activeUserListView.getSelectionModel().getSelectedItem();
-			client.sendTextMessage(user, typeMessageField.getText());
+			client.sendTextMessage(user, "\"" + typeMessageField.getText() + "\"");
 			typeMessageField.clear();
 			
 		}
