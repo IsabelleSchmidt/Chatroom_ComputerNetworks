@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import message.ChatMessage;
@@ -24,7 +25,8 @@ public class Client {
 	private InetAddress serverAddress;
 	private int serverPort = 8888;
 	private String name;
-	public ObservableList<String> activeUser = FXCollections.observableArrayList();
+	private ObservableList<String> activeUser = FXCollections.observableArrayList();
+	private ObservableList<String> chatPartners = FXCollections.observableArrayList();
 	
 	//TCP
 	private Socket socket;
@@ -38,12 +40,15 @@ public class Client {
 	private ClientUDPThread udpThread;
 	
 	// GUI
-	private boolean loggedout = false;
-	private boolean login = false;
-	private boolean register = true;
+	public SimpleBooleanProperty loggedOutProperty;
+	public SimpleBooleanProperty loggedInProperty;
+	public SimpleBooleanProperty registeredProperty;
 
 	public Client(String name, int port) {
 		this.name = name;
+		this.loggedOutProperty = new SimpleBooleanProperty();
+		this.loggedInProperty = new SimpleBooleanProperty();
+		this.registeredProperty = new SimpleBooleanProperty();
 		
 		// Init Server IP Address
 		try {
@@ -66,7 +71,7 @@ public class Client {
 	}
 	
 	public void startTCP() throws UnknownHostException, IOException {
-		System.out.println("startClient Methode wurde aufgerufen");
+		System.out.println("Client: startTCP()");
 		
 		// Socket, Output, Input, Reader
 		try {
@@ -97,23 +102,17 @@ public class Client {
 	
 	public void sendChatRequest(String otherClientName) {
 		Message clientMessage = MessageGenerator.sendRequest(otherClientName, clientAddress, clientPort);
-		
-		System.out.println(this.name + ": send to Server - " + clientMessage.getRaw());
 		writeMessage(clientMessage);
 	}
 	
 	public void acceptRequest(String requestSender, String senderAddress, String senderPort) {
 		Message clientMessage = MessageGenerator.acceptRequest(requestSender, clientAddress, clientPort);
-		System.out.println(this.name + ": sent to Server - " + clientMessage.getRaw());
-		
 		writeMessage(clientMessage);
 		newChat(requestSender, senderAddress, senderPort);
 	}
 	
 	public void declineRequest(String requestSender) {
 		Message clientMessage = MessageGenerator.declineRequest(requestSender);
-		System.out.println(this.name + ": sent to Server - " + clientMessage.getRaw());
-		
 		writeMessage(clientMessage);
 	}
 
@@ -135,11 +134,12 @@ public class Client {
 		// Start new chat thread
 		udpThread.addConnectionData(otherClient, info);
 		udpThread.addChatData(info, chatData);
+		chatPartners.add(otherClient);
 		udpThread.start();
 	}
 	
 	public void sendTextMessage(String otherClient, String text) {
-		ChatMessage newMessage = new ChatMessage(this.name, text);
+		ChatMessage newMessage = new ChatMessage("ich", text);
 		EndpointInfo info = udpThread.connectionData.get(otherClient);
 		udpThread.chatData.get(info).addMessage(newMessage);
 		
@@ -148,6 +148,8 @@ public class Client {
 	}
 	
 	public void listen() {
+		System.out.println("Client: listen()");
+		
 		if (listenThread != null) {
             listenThread.interrupt();
             listenThread = null;
@@ -167,7 +169,7 @@ public class Client {
                     
                 } catch (SocketException e) {
                     if (Thread.interrupted()) {
-                        System.out.println("Thread endet wie gewï¿½nscht.");
+                        System.out.println("Thread endet wie gewünscht.");
                     } else {
                     	System.out.println("Client: Server is not available...");
                     }
@@ -185,22 +187,20 @@ public class Client {
 	public void handleMessage(String line) throws IOException {
 		Message serverMessage = new Message(line);
 		Command serverCommand = serverMessage.getCommand();
-		System.out.println(serverMessage.getRaw());
+		System.out.println(this.name + ": from server - " + serverMessage.getRaw());
 		
 		switch (serverCommand) {
 		case REGISTER_ACCEPTED:
-			register = true;
-			System.out.println("REGISTRIEREN");
+			registeredProperty.set(true);;
 			break;
 		case REGISTER_DECLINED:
-			register = false;
-			System.out.println("REGISTRIEREN");
+			registeredProperty.set(false);;
 			break;
 		case LOGIN_ACCEPTED:
-			login = true;
+			loggedInProperty.set(true);;
 			break;
 		case LOGIN_DECLINED:
-			login = false;
+			loggedInProperty.set(false);;
 			break;
 		case REQUEST_ACCEPTED:
 			System.out.println(this.name + ": Request accepted. Start new chat.");
@@ -211,7 +211,6 @@ public class Client {
 			newChat(name, address, port);
 			break;
 		case REQUEST_DECLINED:
-			System.out.println(this.name + ": Request declined.");
 			// TODO: GUI aendern
 			break;
 		case NEW_REQUEST:
@@ -224,24 +223,26 @@ public class Client {
 			acceptRequest(requestSender, senderAddress, senderPort);
 			break;
 		case LOGEDOUT:
-			loggedout = true;
+			loggedOutProperty.set(true);;
 			closeTCPSocket();
 			break;
+		case USER_ONLINE:
+			activeUser.add(serverMessage.getAttributes().get("name"));
+			System.out.println(this.name + ": user online: " + serverMessage.getAttributes().get("name"));
+			break;
+		case USER_OFFLINE:
+			activeUser.remove(serverMessage.getAttributes().get("name"));
+			chatPartners.remove(serverMessage.getAttributes().get("name"));
+			System.out.println(this.name + ": user offline: " + serverMessage.getAttributes().get("name"));
+			break;
 		default:
-		    System.out.println("line: " + line);
-		    if(!activeUser.contains(line)) {
-		    	activeUser.add(line);
-		    }else {
-		    	activeUser.remove(line);
-		    }
-		    System.out.println("activeUser Client: " + activeUser);
-		
-
+		    break;
 		}
 	}
 	
 	private void writeMessage(Message message) {
     	try {
+    		System.out.println(this.name + ": send to server - " + message.getRaw());
 	        writer.write(message.getRaw() + "\n");
 	        writer.flush();
     	} catch (IOException e) {
@@ -271,32 +272,12 @@ public class Client {
 		return null;
 	}
 	
-	public void setLoggedout(boolean loggedout) {
-		this.loggedout = loggedout;
-	}
-
-	public boolean isLoggedout() {
-		return loggedout;
-	}
-	
-	public boolean isLogin() {
-		return login;
-	}
-
-	public void setLogin(boolean login) {
-		this.login = login;
-	}
-	
-	public boolean isRegister() {
-		return register;
-	}
-
-	public void setRegister(boolean register) {
-		this.register = register;
-	}
-	
 	public ObservableList<String> getActiveUser() {
 		return activeUser;
+	}
+
+	public ObservableList<String> getChatPartners() {
+		return chatPartners;
 	}
 	
 }

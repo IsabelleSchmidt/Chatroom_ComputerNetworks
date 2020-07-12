@@ -28,6 +28,8 @@ public enum Command {
 	REQUEST_DECLINED,		// Server gibt die Ablehnung an den Client weiter
 	REQUEST_ACCEPTED,		// Server gibt die Bestaetigung an den Client weiter
 	
+	USER_ONLINE,
+	USER_OFFLINE,
 	
 	ILLEGAL_COMMAND
 }

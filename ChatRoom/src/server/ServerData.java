@@ -24,8 +24,13 @@ public class ServerData {
 	}
 	
 	public void addTCPRoutingInfo(String client, ServerTCPThread thread) {
-		System.out.println("ServerData: routing info:" + client + ", " + thread.getClientSocket().getPort());
+		System.out.println("ServerData: routing info: " + client + ", " + thread.getClientSocket().getPort());
 		routingTableTCP.put(client, thread);
+	}
+	
+	public void removeTCPRoutingInfo(String client) {
+		System.out.println("ServerData: routing info deleted: " + client);
+		routingTableTCP.remove(client);
 	}
 	
 	public boolean login(String name, String passwort) {
@@ -65,6 +70,10 @@ public class ServerData {
 	
 	public ObservableList<String> getActiveUser() {
 		return activeUser;
+	}
+
+	public Map<String, ServerTCPThread> getRoutingTableTCP() {
+		return routingTableTCP;
 	}
 
 }

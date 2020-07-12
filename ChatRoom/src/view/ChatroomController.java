@@ -26,19 +26,7 @@ import server.Server;
 
 /**
  * TODO:
- * 1. activeUserListView wird nur bei dem 1 User angezeigt, da nur er einen Zugriff auf Server hat.
- * evtl. Message vom Server implementieren, die mit der gleich nach der Einlogge-Bestaetigung an den Client geschickt wird sowie
- * jedes mal, wenn neue Clients dazukommen.
- * 
- * 2. chatRoomListView soll bei dem Absende-Client gleich nach dem Absenden angezeigt werden, bei dem Empfaenger
- * gleich nachdem alle Chunks angekommen sind. (Alle angekommenen Chat Messages liegen hier -> client.getChatData(newValue).getChatHistory()
- * 
- * 
- * 3. Da Stop-and-Wait Logik ausgenommen wurde, bekommt GUI jetzt keine returns in Methoden,
- * aus denen die Anfrage an den Server abgeschickt wurde. Alle Server-Responses werden in der Klasse Client, Methode handleMessage()
- * bearbeitet. D.h. GUI neu verknuepfen.
- * 
- * 4. GUI Loesung fuer Chat-Anfragen implementieren. Gerade wird die Anfrage automatisch angenommen.
+ * GUI Loesung fuer Chat-Anfragen implementieren. Gerade wird die Anfrage automatisch angenommen.
  *
  */
 
@@ -85,100 +73,53 @@ public class ChatroomController {
 	private Button loggout;
 
 	@FXML
-	private Button startServer;
-
-	@FXML
 	private Label informationLabel;
 	
 	private Client client;
-	private Server server;
+
 	boolean isStarted = false;
-//	List<Integer> clientPortNummer;
-//	final int MAX_CLIENT = 6;
 	int clientUDPPort;
 	boolean selected = false;
 	
 	public ChatroomController() {
-//		clientPortNummer = new ArrayList<>();
-//		int startValue = 1201;
-//		for (int i = 0; i < MAX_CLIENT; i++) {
-//			clientPortNummer.add(startValue + i);
-//		}
-		
-	}
 
-	public Button getStartServer() {
-		return startServer;
 	}
 
 	@FXML
 	void SetOnActionLoginButton(ActionEvent event) {
-		System.out.println(username.getText() + password.getText());
-
 		String name = username.getText();
 		String passwort = password.getText();
+		
+		System.out.println("ChatRoomController: " + name + ", " + passwort);
 		
 		// Client UDP Port wird random generiert
 		clientUDPPort = (int) (Math.random() * 2123) + 1201; 
 		System.out.println("VC: UDP port: " + clientUDPPort);
 		
+		// new client
 		this.client = new Client(name, clientUDPPort);
-
+		
+		// listeners for ListViews
+		initListeners();
+		
+		// When client logged in -> scrollUp
+		client.loggedInProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
+				if (newValue.booleanValue()) {
+					scrollUp();	
+				} else {
+					informationLabel.setText("Bitte pruefe nochmal deine Daten.");
+				}
+			}
+		});
+		
 		try {
 			client.startTCP();
-			System.out.println("Client wurde gestartet");
+			client.login(name, passwort);
 		} catch (IOException e) {
 			informationLabel.setText("Bitte erstmal den Server starten");
 			e.printStackTrace();
-		}
-		if (client.isLogin()) {
-			scrollUp();
-			client.setLogin(false);
-			// Wenn man auf den Namen klickt, wird die Chat-Historie angezeigt
-						activeUserListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-							
-							@Override
-							public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-								sendButton.setDisable(false);
-								anfrageButton.setDisable(false);
-								
-								if (client.getChatData(newValue) != null) {
-									ObservableList<String> messages = FXCollections.observableArrayList();
-									client.getChatData(newValue).getMessages().stream().forEach(e -> messages.add(e.toString()));
-									
-									chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
-									chatRoomListView.setItems(messages);
-								}
-								
-								client.getChatData(newValue).getMessages().addListener(new ListChangeListener<ChatMessage>() {
-
-									@Override
-									public void onChanged(Change<? extends ChatMessage> arg0) {
-										ObservableList<String> messages = FXCollections.observableArrayList();
-										client.getChatData(newValue).getMessages().stream().forEach(e -> messages.add(e.toString()));
-										
-										chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
-										chatRoomListView.setItems(messages);
-										
-									}
-									
-								});
-								
-							}
-							
-							
-						});
-						client.getActiveUser().addListener(new ListChangeListener<String>() {
-							@Override
-							public void onChanged(Change<? extends String> arg0) {
-								System.out.println("USERSSSSS: ");
-								Platform.runLater(() -> {
-									activeUserListView.getItems().setAll(arg0.getList());
-								});
-							}
-						});
-		} else {
-			informationLabel.setText("Bitte pruefe nochmal deine Daten.");
 		}
 
 	}
@@ -187,78 +128,140 @@ public class ChatroomController {
 	void SetOnActionRegisterButton(ActionEvent event) {
 		String name = username.getText();
 		String passwort = password.getText();
-		System.out.println("ChatRoomController: " + username.getText() + ", " + password.getText());
+		System.out.println("ChatRoomController: " + name + ", " + passwort);
 
 		// Client UDP Port wird random generiert
 		clientUDPPort = (int) (Math.random() * 2123) + 1201;
 		System.out.println("VC: UDP port: " + clientUDPPort);
 		
+		// new client
 		this.client = new Client(name, clientUDPPort);
+		
+		// listeners for ListViews
+		initListeners();
+		
+		// When client registered -> scrollUp
+		client.registeredProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
+				if (newValue.booleanValue()) {
+					scrollUp();	
+				} else {
+					informationLabel.setText("Bitte pruefe nochmal deine Daten.");
+				}
+			}
+		});
 		
 		try {
 			client.startTCP();
-			System.out.println("Client wurde gestartet");
+			client.registrier(name, passwort);
 		} catch (IOException e) {
 			informationLabel.setText("Bitte erstmal den Server starten");
 			e.printStackTrace();
-		}
-
-		if (client.isRegister()) {
-			scrollUp();
+		}	
+	}
+	
+	
+	public void initListeners() {
+		// active user listener
+		client.getActiveUser().addListener(new ListChangeListener<String>() {
+			@Override
+			public void onChanged(Change<? extends String> arg0) {
+				System.out.println("VC: change activeUserList - welcome " + arg0);
+				Platform.runLater(() -> {
+					activeUserListView.getItems().setAll(arg0.getList());
+				});
+			}
+		});
+		
+		// switch between chats
+		activeUserListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 			
-			sendButton.setDisable(true);
-			anfrageButton.setDisable(true);
-			
-			// Wenn man auf den Namen klickt, wird die Chat-Historie angezeigt
-			activeUserListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-				
-				@Override
-				public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-					sendButton.setDisable(false);
-					anfrageButton.setDisable(false);
-					
-					if (client.getChatData(newValue) != null) {
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+				if (activeUserListView.getSelectionModel().isEmpty()) {
+					chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
+				} else {
+					if (client.getChatPartners().contains(newValue)) {
+						anfrageButton.setDisable(true);
+						sendButton.setDisable(false);
+						
 						ObservableList<String> messages = FXCollections.observableArrayList();
 						client.getChatData(newValue).getMessages().stream().forEach(e -> messages.add(e.toString()));
 						
 						chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
 						chatRoomListView.setItems(messages);
+					} else {
+						//TODO: show request button
+						anfrageButton.setDisable(false);
+						sendButton.setDisable(true);
 					}
-					
-					client.getChatData(newValue).getMessages().addListener(new ListChangeListener<ChatMessage>() {
+				}
+			}	
+		});
+		
+		// if new chat partner, listen for new messages
+		client.getChatPartners().addListener(new ListChangeListener<String>() {
+			
+			@Override
+			public void onChanged(Change<? extends String> c) {
+				
+				while (c.next()) {
+					if (c.wasAdded()) { //TODO: if was Delete
+						// get new user name
+						String newChatPartner = c.getAddedSubList().get(c.getFrom());
+						System.out.println("VC: listen for new messages from " + newChatPartner);
 
-						@Override
-						public void onChanged(Change<? extends ChatMessage> arg0) {
-							ObservableList<String> messages = FXCollections.observableArrayList();
-							client.getChatData(newValue).getMessages().stream().forEach(e -> messages.add(e.toString()));
-							
-							chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
-							chatRoomListView.setItems(messages);
-							
+						// listen for new messages from new user
+						client.getChatData(newChatPartner).getMessages().addListener(new ListChangeListener<ChatMessage>() {
+
+							@Override
+							public void onChanged(Change<? extends ChatMessage> c1) {
+								while (c1.next()) {
+									if (c1.wasAdded()) {
+										
+										if (!activeUserListView.getSelectionModel().isEmpty()) {
+											if (activeUserListView.getSelectionModel().getSelectedItem().equals(newChatPartner)) {
+												Platform.runLater(() -> {
+													ObservableList<String> messages = FXCollections.observableArrayList();
+													client.getChatData(newChatPartner).getMessages().stream().forEach(e -> messages.add(e.toString()));
+													
+													chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
+													chatRoomListView.setItems(messages);
+												});
+												
+											} else {
+												//TODO: notification about new message
+											}
+										}
+									}
+								}
+							}
+						});
+						
+						
+						if (!activeUserListView.getSelectionModel().isEmpty()) {
+							if (activeUserListView.getSelectionModel().getSelectedItem().equals(newChatPartner)) {
+								Platform.runLater(() -> {
+									sendButton.setDisable(false);
+									anfrageButton.setDisable(true);
+								});
+							}
 						}
 						
-					});
-					
+					} /*else if (c.wasRemoved()) {
+						String newChatPartner = c.getAddedSubList().get(c.getFrom());
+						System.out.println("VC: clear chatRoomListView " + newChatPartner);
+						
+						if (!activeUserListView.getSelectionModel().isEmpty()) {
+							if (activeUserListView.getSelectionModel().getSelectedItem().equals(newChatPartner)) {
+								
+							}
+						}
+					}*/
 				}
-				
-				
-			});
-			client.getActiveUser().addListener(new ListChangeListener<String>() {
-				@Override
-				public void onChanged(Change<? extends String> arg0) {
-					System.out.println("USERSSSSS: ");
-					Platform.runLater(() -> {
-						activeUserListView.getItems().setAll(arg0.getList());
-					});
-				}
-			});
-			
-			
-			
-		} else {
-			informationLabel.setText("Der Benutzername ist leider schon vergeben");
-		}
-		
+			}
+		});
 	}
 
 	
@@ -279,37 +282,23 @@ public class ChatroomController {
 	}
 
 	@FXML
-	void SetStartServerOnAction(ActionEvent event) {
-		server = new Server();
-		server.start();
-		
-		server.getServerData().activeUser.addListener(new ListChangeListener<String>() {
-			@Override
-			public void onChanged(Change<? extends String> arg0) {
-				System.out.println("USERSSSSS: ");
-				Platform.runLater(() -> {
-					activeUserListView.getItems().setAll(arg0.getList());
-				});
-			}
-
-		});
-
-	}
-
-	@FXML
 	void SetOnActionLogoutButton(ActionEvent event) {
 		String name = username.getText();
 		client.logout(name);
-		if (client.isLoggedout()) {
-			client.setLoggedout(false);
-			scrollDown();
-		}
 		
+		client.loggedOutProperty.addListener(new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
+				if (newValue.booleanValue()) {
+					scrollDown();
+				}
+			}
+		});
 		
 	}
 
 	void scrollUp() {
-		
 		TranslateTransition tr1 = new TranslateTransition();
 		tr1.setDuration(Duration.millis(600));
 		tr1.setToX(0);

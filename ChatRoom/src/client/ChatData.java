@@ -36,9 +36,11 @@ public class ChatData {
 			if (aktChunks.size() == (chunk.getChunkNr() + 1)) {
 				
 				Message message = Message.fromChunks(aktChunks);
+				System.out.println("ChatData: fromChunks() - message " + message.getRaw());
 				ChatMessage chatMessage = new ChatMessage(otherClient, message.getAttributes().get("text"));
 				System.out.println("ChatData: addChunk(): message received " + chatMessage.toString());
 				addMessage(chatMessage);
+				aktChunks.clear();
 			}
 		}
 	}

@@ -2,6 +2,7 @@ package server.messagehandler;
 
 import message.Command;
 import message.Message;
+import message.MessageGenerator;
 import server.ServerData;
 import server.ServerTCPThread;
 
@@ -16,9 +17,16 @@ public class LoginHandler implements ServerMessageHandler {
 			return new Message(Command.LOGIN_DECLINED);
 		} else {
 			data.addActiveUser(userName);
-			
 			clientThread.setClientName(userName);
 			data.addTCPRoutingInfo(userName, clientThread);
+			
+			//if current was registered, send other users current user's status
+			Message newUserMessage = MessageGenerator.userOnline(userName);
+			data.getRoutingTableTCP().values()
+				.stream()
+				.filter(u -> !u.getClientName().equals(userName))
+				.forEach(u -> u.sendMessage(newUserMessage));
+			
 			return new Message(Command.LOGIN_ACCEPTED);
 		}
 	}

@@ -114,6 +114,20 @@ public class MessageGenerator {
 		return new Message(Command.CHUNK_RECEIVED, responseMap);
 	}
 	
+	public static Message userOnline(String name) {
+		Map<String, String> responseMap = new HashMap<>();
+		responseMap.put("name", name);
+		
+		return new Message(Command.USER_ONLINE, responseMap);
+	}
+	
+	public static Message userOffline(String name) {
+		Map<String, String> responseMap = new HashMap<>();
+		responseMap.put("name", name);
+		
+		return new Message(Command.USER_OFFLINE, responseMap);
+	}
+	
 	// Illegal Action
 //	public static Message illegalCommand() {
 //		return new Message(Command.ILLEGAL_COMMAND);

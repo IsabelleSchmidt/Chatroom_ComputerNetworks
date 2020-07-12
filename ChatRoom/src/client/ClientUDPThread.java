@@ -8,6 +8,9 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
+import application.Config;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import message.Chunk;
 import message.Command;
 import message.Message;
@@ -77,7 +80,8 @@ public class ClientUDPThread extends Thread {
 
 					   
 					    if (messageStr.startsWith("CHUNK|")) {
-					    	Chunk clientChunk = Chunk.parse(messageStr);
+					    	String messageCut = messageStr.substring(0, Config.RECEIVE_BUFFER_LENGTH - 1);
+					    	Chunk clientChunk = Chunk.parse(messageCut);
 							int chunkNr = clientChunk.getChunkNr();
 							saveMessage(clientChunk, reply.getAddress(), reply.getPort());
 							
@@ -85,7 +89,7 @@ public class ClientUDPThread extends Thread {
 							sendMessage(message, reply.getAddress(), reply.getPort());
 					    	
 					    } else {
-					    	Message message = new Message(messageStr);
+					    	Message message = new Message(messageStr.trim());
 					    	Command serverCommand = message.getCommand();
 					    	
 					    	switch (serverCommand) {

@@ -3,8 +3,6 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Server {
 	
@@ -13,7 +11,6 @@ public class Server {
 	private ServerData serverData;
 	private ServerSocket serverSocket;
 	private boolean serverOn = true;
-	private List<Socket> allClient = new ArrayList<>();
 
 	public Server() {
 		serverData = new ServerData();
@@ -36,11 +33,10 @@ public class Server {
 				while (serverOn) {
 					try {
 						Socket clientSocket = serverSocket.accept();
-						allClient.add(clientSocket);
 						System.out.println("Client verbindet sich.....");
 						
 						// Pro Client wird ein TCP Thread gestartet
-						final ServerTCPThread thread = new ServerTCPThread(clientSocket, serverData, allClient);
+						final ServerTCPThread thread = new ServerTCPThread(clientSocket, serverData);
 						thread.start();
 						
 					} catch (IOException e) {
