@@ -11,7 +11,9 @@ import message.ChatMessage;
 import message.Chunk;
 import message.Message;
 
-
+/**
+ * Class represents chat data with another client.
+ */
 public class ChatData {
 	
 	private String otherClient;

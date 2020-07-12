@@ -89,23 +89,6 @@ public class MessageGenerator {
 		return new Message(Command.SEND_TEXT, responseMap);
 	}
 	
-//	public static Message newTextMessage(String text, String messageSender, int messageNr) {
-//		Map<String, String> responseMap = new HashMap<>();
-//		responseMap.put("text", text);
-//		responseMap.put("messageSender", messageSender);
-//		responseMap.put("messageNr", Integer.toString(messageNr));
-//		
-//		return new Message(Command.NEW_TEXT_MESSAGE, responseMap);
-//	}
-//	
-//	public static Message chunkSaved(int chunkNr) {
-//		Map<String, String> responseMap = new HashMap<>();
-////		responseMap.put("messageRecipient", messageRecipient);
-//		responseMap.put("chunkNr", Integer.toString(chunkNr));
-//		
-//		return new Message(Command.CHUNK_SAVED, responseMap);
-//	}
-	
 	public static Message chunkReceived(int chunkNr) {
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("chunkNr", Integer.toString(chunkNr));

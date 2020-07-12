@@ -7,14 +7,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import message.Command;
 import message.Message;
-import message.MessageGenerator;
 import server.messagehandler.AcceptRequestHandler;
 import server.messagehandler.DeclineRequestHandler;
 import server.messagehandler.LoginHandler;

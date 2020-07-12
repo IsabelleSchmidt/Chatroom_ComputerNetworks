@@ -5,9 +5,7 @@ import java.net.UnknownHostException;
 import java.util.Objects;
 
 /**
- * Klasse repräsentiert Informationen zum Endpoint (IP Adresse, port). 
- * Diese Daten bekommt z.B. Server, um zu wissen, an welchen Client er Chunks schicken soll.
- * @author
+ * Class represents information about an end point (IP Address, port).
  *
  */
 public class EndpointInfo {

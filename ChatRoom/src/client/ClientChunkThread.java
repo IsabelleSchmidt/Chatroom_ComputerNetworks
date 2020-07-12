@@ -12,8 +12,7 @@ import message.Status;
 import server.EndpointInfo;
 
 /**
- * Wird pro Message gestartet
- * @author oksby
+ * Chunk thread send all chunks of one message to other client.
  *
  */
 public class ClientChunkThread extends Thread {

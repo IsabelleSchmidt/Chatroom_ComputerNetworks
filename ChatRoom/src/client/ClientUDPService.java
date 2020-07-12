@@ -16,7 +16,11 @@ import message.MessageGenerator;
 import message.Status;
 import server.EndpointInfo;
 
-
+/**
+ * UDP service is started by the first chat request.
+ * It includes all data for UDP communication.
+ *
+ */
 public class ClientUDPService {
 	
 	private DatagramSocket udpSocket;
@@ -25,14 +29,12 @@ public class ClientUDPService {
 	private ClientChunkThread chunkThread;
 	private int udpPort;
 	
-	private String thisClientName;
 	protected Map<EndpointInfo, ChatData> chatData;
 	protected Map<String, EndpointInfo> connectionData;
 	
 	public ClientUDPService(String thisClient, int udpPort) {
 		this.chatData = new HashMap<>();
 		this.connectionData = new HashMap<>();
-		this.thisClientName = thisClient;
 		this.socketOn = false;
 		this.udpPort = udpPort;
 		initChatListener();
@@ -57,6 +59,11 @@ public class ClientUDPService {
 		connectionData.put(name, info);
 	}
 
+	/**
+	 * Chunk thread is started separately for each chat message.
+	 * @param message
+	 * @param otherClientInfo
+	 */
 	public void startChunkThread(Message message, EndpointInfo otherClientInfo) {
 		int messageNr = chatData.get(otherClientInfo).getMessages().size();
 		chunkThread = new ClientChunkThread(udpSocket, otherClientInfo, message.chunk(messageNr));

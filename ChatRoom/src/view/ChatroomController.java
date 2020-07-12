@@ -22,15 +22,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
 import message.ChatMessage;
-import server.Server;
 
 /**
- * TODO:
- * GUI Loesung fuer Chat-Anfragen implementieren. Gerade wird die Anfrage automatisch angenommen.
+ * ViewController
  *
  */
-
-
 public class ChatroomController {
 
 	@FXML
@@ -107,8 +103,19 @@ public class ChatroomController {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
 				if (newValue.booleanValue()) {
-					scrollUp();	
-				} else {
+					scrollUp();
+					client.logInFailed.set(false);
+					Platform.runLater(() -> {
+						informationLabel.setText("Hello friend.");
+					});
+				}
+			}
+		});
+		
+		client.logInFailed.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
+				if (newValue.booleanValue()) {
 					Platform.runLater(() -> {
 						informationLabel.setText("Bitte pruefe nochmal deine Daten.");
 					});
@@ -147,8 +154,19 @@ public class ChatroomController {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
 				if (newValue.booleanValue()) {
-					scrollUp();	
-				} else {
+					scrollUp();
+					client.registerFailed.set(false);
+					Platform.runLater(() -> {
+						informationLabel.setText("Hello friend.");
+					});
+				}
+			}
+		});
+		
+		client.registerFailed.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
+				if (newValue.booleanValue()) {
 					Platform.runLater(() -> {
 						informationLabel.setText("Bitte pruefe nochmal deine Daten.");
 					});
@@ -196,7 +214,7 @@ public class ChatroomController {
 						chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
 						chatRoomListView.setItems(messages);
 					} else {
-						//TODO: show request button
+						// show request button
 						anfrageButton.setDisable(false);
 						sendButton.setDisable(true);
 						chatRoomListView.getItems().clear();
@@ -225,18 +243,17 @@ public class ChatroomController {
 								while (c1.next()) {
 									if (c1.wasAdded()) {
 										
+										// new message from selected user
 										if (!activeUserListView.getSelectionModel().isEmpty()) {
 											if (activeUserListView.getSelectionModel().getSelectedItem().equals(newChatPartner)) {
 												Platform.runLater(() -> {
 													ObservableList<String> messages = FXCollections.observableArrayList();
 													client.getChatData(newChatPartner).getMessages().stream().forEach(e -> messages.add(e.toString()));
 													
-													chatRoomListView.getItems().remove(0, chatRoomListView.getItems().size());
+													chatRoomListView.getItems().clear();
 													chatRoomListView.setItems(messages);
 												});
-												
-											} else {
-												//TODO: notification about new message
+											
 											}
 										}
 									}
@@ -254,16 +271,7 @@ public class ChatroomController {
 							}
 						}
 						
-					} /*else if (c.wasRemoved()) {
-						String newChatPartner = c.getAddedSubList().get(c.getFrom());
-						System.out.println("VC: clear chatRoomListView " + newChatPartner);
-						
-						if (!activeUserListView.getSelectionModel().isEmpty()) {
-							if (activeUserListView.getSelectionModel().getSelectedItem().equals(newChatPartner)) {
-								
-							}
-						}
-					}*/
+					}
 				}
 			}
 		});
@@ -282,7 +290,6 @@ public class ChatroomController {
 			String user = activeUserListView.getSelectionModel().getSelectedItem();
 			client.sendTextMessage(user, "\"" + typeMessageField.getText() + "\"");
 			typeMessageField.clear();
-			
 		}
 	}
 

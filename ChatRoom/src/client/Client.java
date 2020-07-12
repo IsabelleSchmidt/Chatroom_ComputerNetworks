@@ -44,11 +44,18 @@ public class Client {
 	public SimpleBooleanProperty loggedInProperty;
 	public SimpleBooleanProperty registeredProperty;
 
+	public SimpleBooleanProperty logInFailed;
+	public SimpleBooleanProperty registerFailed;
+
+
 	public Client(String name, int port) {
 		this.name = name;
 		this.loggedOutProperty = new SimpleBooleanProperty();
 		this.loggedInProperty = new SimpleBooleanProperty();
 		this.registeredProperty = new SimpleBooleanProperty();
+
+		this.logInFailed = new SimpleBooleanProperty();
+		this.registerFailed = new SimpleBooleanProperty();
 		
 		// Init Server IP Address
 		try {
@@ -198,13 +205,13 @@ public class Client {
 			registeredProperty.set(true);
 			break;
 		case REGISTER_DECLINED:
-			registeredProperty.set(false);
+			registerFailed.set(true);
 			break;
 		case LOGIN_ACCEPTED:
 			loggedInProperty.set(true);
 			break;
 		case LOGIN_DECLINED:
-			loggedInProperty.set(false);
+			logInFailed.set(true);
 			break;
 		case REQUEST_ACCEPTED:
 			System.out.println(this.name + ": Request accepted. Start new chat.");
