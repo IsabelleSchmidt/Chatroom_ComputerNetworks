@@ -1,5 +1,7 @@
 package server.messagehandler;
 
+import java.util.List;
+
 import message.Command;
 import message.Message;
 import message.MessageGenerator;
@@ -19,6 +21,20 @@ public class LoginHandler implements ServerMessageHandler {
 			data.addActiveUser(userName);
 			clientThread.setClientName(userName);
 			data.addTCPRoutingInfo(userName, clientThread);
+			
+			//if current user was registered or logged in, send him all active user
+			List<String> activeUserList = data.getActiveUser();
+			System.out.println("activeUser: " + activeUserList);
+			
+			for(String s : activeUserList) {
+				if(s != null) {
+					if(!userName.equals(s)) {		//damit eigener Name nicht angezeigt wird
+						System.out.println("user: " + s);
+						Message newUserMessage = MessageGenerator.userOnline(s);
+						clientThread.sendMessage(newUserMessage);
+					}
+				}
+			}
 			
 			//if current was registered, send other users current user's status
 			Message newUserMessage = MessageGenerator.userOnline(userName);

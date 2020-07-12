@@ -51,7 +51,7 @@ public class Message {
 		this.raw = serialize();
 	}
 	
-	public Chunk[] chunk() {
+	public Chunk[] chunk(int messageNr) {
         int chunkCount = (int) Math.ceil(raw.length() / (double) Config.CHUNK_CONTENT_SIZE);
         Chunk[] chunks = new Chunk[chunkCount];
 	
@@ -60,7 +60,7 @@ public class Message {
             int end = start + Config.CHUNK_CONTENT_SIZE;
             String chunkString = raw.substring(start, end <= raw.length() ? end : raw.length());
             boolean isLast = i == chunkCount - 1;
-            chunks[i] = new Chunk(i, isLast, chunkString);
+            chunks[i] = new Chunk(messageNr, i, isLast, chunkString);
         }
 	
         return chunks;

@@ -109,7 +109,9 @@ public class ChatroomController {
 				if (newValue.booleanValue()) {
 					scrollUp();	
 				} else {
-					informationLabel.setText("Bitte pruefe nochmal deine Daten.");
+					Platform.runLater(() -> {
+						informationLabel.setText("Bitte pruefe nochmal deine Daten.");
+					});
 				}
 			}
 		});
@@ -147,7 +149,9 @@ public class ChatroomController {
 				if (newValue.booleanValue()) {
 					scrollUp();	
 				} else {
-					informationLabel.setText("Bitte pruefe nochmal deine Daten.");
+					Platform.runLater(() -> {
+						informationLabel.setText("Bitte pruefe nochmal deine Daten.");
+					});
 				}
 			}
 		});
@@ -195,6 +199,7 @@ public class ChatroomController {
 						//TODO: show request button
 						anfrageButton.setDisable(false);
 						sendButton.setDisable(true);
+						chatRoomListView.getItems().clear();
 					}
 				}
 			}	
@@ -209,7 +214,7 @@ public class ChatroomController {
 				while (c.next()) {
 					if (c.wasAdded()) { //TODO: if was Delete
 						// get new user name
-						String newChatPartner = c.getAddedSubList().get(c.getFrom());
+						String newChatPartner = c.getAddedSubList().get(0);
 						System.out.println("VC: listen for new messages from " + newChatPartner);
 
 						// listen for new messages from new user
@@ -291,6 +296,12 @@ public class ChatroomController {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
 				if (newValue.booleanValue()) {
+					Platform.runLater(() -> {
+						activeUserListView.getItems().clear();
+						chatRoomListView.getItems().clear();
+						sendButton.setDisable(true);
+						anfrageButton.setDisable(true);
+					});
 					scrollDown();
 				}
 			}

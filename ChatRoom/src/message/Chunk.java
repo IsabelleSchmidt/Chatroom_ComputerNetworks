@@ -4,16 +4,18 @@ public class Chunk implements Comparable<Chunk>{
     private String content;
     private int chunkNr;
     private boolean isEnd;
+    private int messageNr;
 
-    public Chunk(int chunkNr, boolean isEnd, String content) {
+    public Chunk(int messageNr, int chunkNr, boolean isEnd, String content) {
         this.content = content;
         this.chunkNr = chunkNr;
         this.isEnd = isEnd;
+        this.messageNr = messageNr;
     }
 
     @Override
     public String toString() {
-        String str = String.format("CHUNK|%s|%d|%s\n", String.format("%03d", chunkNr), isEnd ? 1 : 0, content);
+        String str = String.format("CHUNK|%s|%s|%d|%s\n", String.format("%02d", messageNr), String.format("%03d", chunkNr), isEnd ? 1 : 0, content);
         return str;
     }
 
@@ -23,7 +25,7 @@ public class Chunk implements Comparable<Chunk>{
 
     public static Chunk parse(String packetStr) {
         String[] dataComponents = packetStr.split("\\|"); // escape meta char | (regex)
-        return new Chunk(Integer.parseInt(dataComponents[1]), dataComponents[2].equals("1"), dataComponents[3]);
+        return new Chunk(Integer.parseInt(dataComponents[1]), Integer.parseInt(dataComponents[2]), dataComponents[3].equals("1"), dataComponents[4]);
     }
 
     public String getContent() {

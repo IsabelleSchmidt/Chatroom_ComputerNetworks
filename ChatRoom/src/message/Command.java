@@ -13,7 +13,7 @@ public enum Command {
 	ACCEPT_REQUEST,			// Client lehnt die Anfrage ab
 	
 	// UDP
-	SEND_TEXT_MESSAGE,		// Text-Nachricht von einem Client an den anderen
+	SEND_TEXT,				// Text-Nachricht von einem Client an den anderen
 	CHUNK_RECEIVED,			// Empfaenger-Nachricht, wenn Message angekommen ist
 	
 	// Server-Nachrichten

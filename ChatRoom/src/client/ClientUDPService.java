@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import application.Config;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import message.Chunk;
 import message.Command;
 import message.Message;
@@ -18,7 +16,8 @@ import message.MessageGenerator;
 import message.Status;
 import server.EndpointInfo;
 
-public class ClientUDPThread extends Thread {
+
+public class ClientUDPService {
 	
 	private DatagramSocket udpSocket;
 	private boolean socketOn;
@@ -30,17 +29,16 @@ public class ClientUDPThread extends Thread {
 	protected Map<EndpointInfo, ChatData> chatData;
 	protected Map<String, EndpointInfo> connectionData;
 	
-	public ClientUDPThread(String thisClient, int udpPort) {
+	public ClientUDPService(String thisClient, int udpPort) {
 		this.chatData = new HashMap<>();
 		this.connectionData = new HashMap<>();
 		this.thisClientName = thisClient;
-		this.socketOn = true;
+		this.socketOn = false;
 		this.udpPort = udpPort;
 		initChatListener();
 	}
 	
-	@Override
-	public void run() {
+	public void start() {
 		try {
 			udpSocket = new DatagramSocket(udpPort);
 		} catch (SocketException e) {
@@ -60,7 +58,8 @@ public class ClientUDPThread extends Thread {
 	}
 
 	public void startChunkThread(Message message, EndpointInfo otherClientInfo) {
-		chunkThread = new ClientChunkThread(udpSocket, otherClientInfo, message.chunk());
+		int messageNr = chatData.get(otherClientInfo).getMessages().size();
+		chunkThread = new ClientChunkThread(udpSocket, otherClientInfo, message.chunk(messageNr));
 		chunkThread.start();
 	}
 	
@@ -85,7 +84,7 @@ public class ClientUDPThread extends Thread {
 							int chunkNr = clientChunk.getChunkNr();
 							saveMessage(clientChunk, reply.getAddress(), reply.getPort());
 							
-							Message message = MessageGenerator.chunkReceived(thisClientName, chunkNr);
+							Message message = MessageGenerator.chunkReceived(chunkNr);
 							sendMessage(message, reply.getAddress(), reply.getPort());
 					    	
 					    } else {
@@ -132,9 +131,17 @@ public class ClientUDPThread extends Thread {
 		}
 	}
 	
-	public void closeUDPSocket() {
+	public void stop() {
 		socketOn = false;
+		chatListener.interrupt();
 		udpSocket.close();
+		System.out.println("Close UDP Socket, interrupt listener");
 	}
+
+	public boolean isSocketOn() {
+		return socketOn;
+	}
+	
+	
 
 }

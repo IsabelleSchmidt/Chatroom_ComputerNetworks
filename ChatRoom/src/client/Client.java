@@ -37,7 +37,7 @@ public class Client {
 	// UDP
 	private InetAddress clientAddress;
 	private int clientPort;
-	private ClientUDPThread udpThread;
+	private ClientUDPService udpService;
 	
 	// GUI
 	public SimpleBooleanProperty loggedOutProperty;
@@ -67,7 +67,7 @@ public class Client {
 		// Init Client port
 		this.clientPort = port;
 		
-		udpThread = new ClientUDPThread(name, port);
+		udpService = new ClientUDPService(name, port);
 	}
 	
 	public void startTCP() throws UnknownHostException, IOException {
@@ -132,19 +132,23 @@ public class Client {
 		EndpointInfo info = new EndpointInfo(address, port);
 		
 		// Start new chat thread
-		udpThread.addConnectionData(otherClient, info);
-		udpThread.addChatData(info, chatData);
+		udpService.addConnectionData(otherClient, info);
+		udpService.addChatData(info, chatData);
 		chatPartners.add(otherClient);
-		udpThread.start();
+		
+		if (!udpService.isSocketOn()) {
+			udpService.start();
+		}
+
 	}
 	
 	public void sendTextMessage(String otherClient, String text) {
 		ChatMessage newMessage = new ChatMessage("ich", text);
-		EndpointInfo info = udpThread.connectionData.get(otherClient);
-		udpThread.chatData.get(info).addMessage(newMessage);
+		EndpointInfo info = udpService.connectionData.get(otherClient);
+		udpService.chatData.get(info).addMessage(newMessage);
 		
 		Message message = MessageGenerator.sendTextMessage(text, newMessage.getTime());
-		udpThread.startChunkThread(message, info);
+		udpService.startChunkThread(message, info);
 	}
 	
 	public void listen() {
@@ -191,16 +195,16 @@ public class Client {
 		
 		switch (serverCommand) {
 		case REGISTER_ACCEPTED:
-			registeredProperty.set(true);;
+			registeredProperty.set(true);
 			break;
 		case REGISTER_DECLINED:
-			registeredProperty.set(false);;
+			registeredProperty.set(false);
 			break;
 		case LOGIN_ACCEPTED:
-			loggedInProperty.set(true);;
+			loggedInProperty.set(true);
 			break;
 		case LOGIN_DECLINED:
-			loggedInProperty.set(false);;
+			loggedInProperty.set(false);
 			break;
 		case REQUEST_ACCEPTED:
 			System.out.println(this.name + ": Request accepted. Start new chat.");
@@ -223,7 +227,8 @@ public class Client {
 			acceptRequest(requestSender, senderAddress, senderPort);
 			break;
 		case LOGEDOUT:
-			loggedOutProperty.set(true);;
+			loggedOutProperty.set(true);
+			udpService.stop(); // close udp socket, interrupt listener
 			closeTCPSocket();
 			break;
 		case USER_ONLINE:
@@ -232,7 +237,9 @@ public class Client {
 			break;
 		case USER_OFFLINE:
 			activeUser.remove(serverMessage.getAttributes().get("name"));
-			chatPartners.remove(serverMessage.getAttributes().get("name"));
+			if (chatPartners.contains(serverMessage.getAttributes().get("name"))) {
+				chatPartners.remove(serverMessage.getAttributes().get("name"));
+			}
 			System.out.println(this.name + ": user offline: " + serverMessage.getAttributes().get("name"));
 			break;
 		default:
@@ -259,15 +266,15 @@ public class Client {
 	public void closeTCPSocket() throws IOException {
 		if (listenThread != null) {
             listenThread.interrupt();
-            System.out.println("Client: Schlie�e Socket...");
+            System.out.println("Client: Schliesse Socket...");
             socket.close();
             listenThread = null;
         }
 	}
 	
 	public ChatData getChatData(String name) {
-		if (udpThread.chatData.containsKey(udpThread.connectionData.get(name))) {
-			return udpThread.chatData.get(udpThread.connectionData.get(name));
+		if (udpService.chatData.containsKey(udpService.connectionData.get(name))) {
+			return udpService.chatData.get(udpService.connectionData.get(name));
 		}
 		return null;
 	}

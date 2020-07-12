@@ -66,6 +66,7 @@ public class ClientChunkThread extends Thread {
 				while (check) {
 					if (transferCompleted()) {
 						check = false;
+						this.interrupt();
 						break;
 					}
 					
